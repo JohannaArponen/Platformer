@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 7970692294856033175}
   - component: {fileID: 4953458472901285445}
   - component: {fileID: -5871064214372496528}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 258820097050964185}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8268331, y: -0.13128982, z: -13.323883}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2207070683441573308}
@@ -47,6 +47,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c5e4b3ab44822549a5f9f119cbe6576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  jumpKey: 32
+  up: 119
+  down: 115
+  right: 100
+  left: 97
+  jumpStrength: 10
+  moveSpeedTarget: 5
+  baseGavity: 20
+  jumpPressGravity: 15
+  downPressGravity: 30
+  xGroundResistance: 0.88
+  xAirResistance: 0.97
+  collisionMargin: 0.15
+  pushBack: 0
 --- !u!114 &7970692294856033175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,7 +118,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.7, y: 0.7}
   m_EdgeRadius: 0
 --- !u!1 &7116313749340706640
 GameObject:
@@ -116,7 +130,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2207070683441573308}
   - component: {fileID: 2543039578439120619}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
