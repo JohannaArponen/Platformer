@@ -47,14 +47,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c5e4b3ab44822549a5f9f119cbe6576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpKey: 32
+  jump: 32
   up: 119
   down: 115
   right: 100
   left: 97
   jumpStrength: 10
   moveSpeed: 5
-  noMoveDecay: 10
+  noMoveDecay: 2
+  noMoveDecayGround: 30
   baseGavity: 20
   onGroundGravity: 50
   jumpPressGravity: 15

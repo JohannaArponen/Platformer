@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
 
-  public KeyCode jumpKey = KeyCode.Space;
+  public KeyCode jump = KeyCode.Space;
   public KeyCode up = KeyCode.W;
   public KeyCode down = KeyCode.S;
   public KeyCode right = KeyCode.D;
@@ -12,7 +12,8 @@ public class PlayerMovement : MonoBehaviour {
 
   public float jumpStrength = 10f;
   public float moveSpeed = 5f;
-  public float noMoveDecay = 0.5f;
+  public float noMoveDecay = 10f;
+  public float noMoveDecayGround = 20f;
   public float baseGavity = 1f;
   public float onGroundGravity = 10f;
   public float jumpPressGravity = 0.5f;
@@ -44,13 +45,13 @@ public class PlayerMovement : MonoBehaviour {
     var lefted = Lefted();
 
     gravity = gravity.normalized * baseGavity;
-    if (Input.GetKeyDown(jumpKey) && floored) {
+    if (Input.GetKeyDown(jump) && floored) {
       rb.velocity -= new Vector2(0, rb.velocity.y); // normalize y
       rb.velocity += Vector2.up * jumpStrength;
     } else if (floored) {
       gravity = gravity.normalized * onGroundGravity;
     }
-    if (Input.GetKey(jumpKey)) {
+    if (Input.GetKey(jump)) {
       gravity = gravity.normalized * jumpPressGravity;
     }
 
@@ -68,7 +69,8 @@ public class PlayerMovement : MonoBehaviour {
       rb.velocity -= new Vector2((moveSpeed - -rb.velocity.x) * 10 * Time.deltaTime, 0);
     }
     if (!Input.GetKey(left) && !Input.GetKey(right)) {
-      rb.velocity -= new Vector2(rb.velocity.x * noMoveDecay, 0) * Time.deltaTime;
+      if (floored && !Input.GetKeyDown(jump)) rb.velocity -= rb.velocity * noMoveDecayGround * Time.deltaTime;
+      else rb.velocity -= new Vector2(rb.velocity.x * noMoveDecay, 0) * Time.deltaTime;
     }
 
     rb.velocity += gravity * Time.deltaTime;
@@ -76,10 +78,7 @@ public class PlayerMovement : MonoBehaviour {
 
   void OnCollisionEnter2D(Collision2D collision) => HugGround(collision.contacts[0].normal);
   void OnCollisionStay2D(Collision2D collision) => HugGround(collision.contacts[0].normal);
-
-  void OnCollisionExit2D(Collision2D collision) {
-    gravity = Vector2.down * baseGavity;
-  }
+  void OnCollisionExit2D(Collision2D collision) => gravity = Vector2.down * baseGavity;
 
   void HugGround(Vector2 normal) {
     if (Vector2.Angle(normal, Vector2.up) <= maxSlopeAngle) {
