@@ -11,22 +11,17 @@ public class PlayerMovement : MonoBehaviour {
   public KeyCode left = KeyCode.A;
 
   public float jumpStrength = 10f;
-  public float moveSpeedTarget = 5f;
-  public float baseGavity = 20f;
-  public float jumpPressGravity = 15f;
-  public float downPressGravity = 30f;
+  public float moveSpeed = 5f;
+  public float noMoveDecay = 0.5f;
+  public float baseGavity = 1f;
+  public float jumpPressGravity = 0.5f;
+  public float downPressGravity = 1.5f;
 
-  public float xGroundResistance = 0.88f;
-  public float xAirResistance = 0.97f;
+  public float collisionMargin = 0.1f;
 
-  public float collisionMargin = 0.15f;
-  public float pushBack = 0.00f;
 
   Rigidbody2D rb;
   new BoxCollider2D collider;
-
-  float gravity;
-  Vector2 velocity;
 
   float width;
   float height;
@@ -34,7 +29,7 @@ public class PlayerMovement : MonoBehaviour {
   void Start() {
     rb = GetComponent<Rigidbody2D>();
     collider = GetComponent<BoxCollider2D>();
-    gravity = baseGavity;
+    rb.gravityScale = baseGavity;
     width = collider.size.x;
     height = collider.size.y;
   }
@@ -45,96 +40,37 @@ public class PlayerMovement : MonoBehaviour {
     var righted = Righted();
     var lefted = Lefted();
 
-    var iseilinged = Lefted();
-    if (!Input.GetKey(up) && !Input.GetKey(down)) {
-      if (floored) {
-        velocity.x *= xGroundResistance;
-      } else {
-        velocity.x *= xAirResistance;
-      }
-    }
-    gravity = baseGavity;
+    rb.gravityScale = baseGavity;
     if (Input.GetKeyDown(jumpKey) && floored) {
-      velocity -= new Vector2(0, velocity.y); // normalize y
-      velocity += Vector2.up * jumpStrength;
+      rb.velocity -= new Vector2(0, rb.velocity.y); // normalize y
+      rb.velocity += Vector2.up * jumpStrength;
     }
     if (Input.GetKey(jumpKey)) {
-      gravity = jumpPressGravity;
+      rb.gravityScale = jumpPressGravity;
     }
 
-    if (Input.GetKey(up)) {
-    }
     if (Input.GetKey(down)) {
       if (floored) {
         // Crouch
       } else {
-        gravity = downPressGravity;
+        rb.gravityScale = downPressGravity;
       }
     }
-    if (Input.GetKey(right) && velocity.x < moveSpeedTarget) {
-      velocity.x += moveSpeedTarget;
+    if (Input.GetKey(right) && rb.velocity.x < moveSpeed) {
+      rb.velocity += new Vector2((moveSpeed - rb.velocity.x) * 10 * Time.deltaTime, 0);
     }
-    if (Input.GetKey(left) && velocity.x > -moveSpeedTarget) {
-      velocity.x -= moveSpeedTarget;
+    if (Input.GetKey(left) && rb.velocity.x > -moveSpeed) {
+      rb.velocity -= new Vector2((moveSpeed - -rb.velocity.x) * 10 * Time.deltaTime, 0);
     }
-
-    // Collision
-    if (righted || lefted) {
-      if (righted && velocity.x > 0) {
-        if (!lefted) {
-          var pos = transform.position;
-          pos.x = Mathf.Min(pos.x, pos.x - pushBack);
-          transform.position = pos;
-        }
-        velocity.x = 0;
-      }
-      if (lefted && velocity.x <= 0) {
-        if (!righted) {
-          var pos = transform.position;
-          pos.x = Mathf.Max(pos.x, pos.x + pushBack);
-          transform.position = pos;
-        }
-        velocity.x = 0;
-      }
+    if (!Input.GetKey(left) && !Input.GetKey(right)) {
+      rb.velocity -= new Vector2(rb.velocity.x * noMoveDecay, 0) * Time.deltaTime;
     }
-    if (ceilinged && velocity.y > 0) {
-      if (!floored) {
-        var pos = transform.position;
-        pos.y = Mathf.Min(pos.y, pos.y - pushBack);
-        transform.position = pos;
-      }
-      velocity.y = 0;
-    }
-    if (floored && velocity.y <= 0) {
-      if (!ceilinged) {
-        var pos = transform.position;
-        pos.y = Mathf.Max(pos.y, pos.y + pushBack);
-        transform.position = pos;
-      }
-      velocity.y = 0;
-    } else { // Gravity
-      velocity = new Vector2(velocity.x, velocity.y - gravity * Time.deltaTime);
-    }
-
-    transform.Translate(velocity * Time.deltaTime);
   }
 
-  RaycastHit2D Floored() => Physics2D.Raycast(
-    BottomLeftCorner() + new Vector2(collisionMargin, 0),
-    Vector2.right, width - collisionMargin * 2
-  );
-  RaycastHit2D Ceilinged() => Physics2D.Raycast(
-    TopLeftCorner() + new Vector2(collisionMargin, 0),
-    Vector2.right, width - collisionMargin * 2
-  );
-  RaycastHit2D Righted() => Physics2D.Raycast(
-    TopRigthCorner() + new Vector2(0, collisionMargin),
-    Vector2.down, height - collisionMargin * 2
-  );
-  RaycastHit2D Lefted() => Physics2D.Raycast(
-    TopLeftCorner() + new Vector2(0, collisionMargin),
-    Vector2.down, height - collisionMargin * 2
-  );
+  RaycastHit2D Floored() => Physics2D.Raycast(BottomLeftCorner() - new Vector2(0, collisionMargin), Vector2.right, width);
+  RaycastHit2D Ceilinged() => Physics2D.Raycast(TopLeftCorner() + new Vector2(0, collisionMargin), Vector2.right, width);
+  RaycastHit2D Righted() => Physics2D.Raycast(TopRigthCorner() + new Vector2(collisionMargin, 0), Vector2.down, height);
+  RaycastHit2D Lefted() => Physics2D.Raycast(TopLeftCorner() - new Vector2(collisionMargin, 0), Vector2.down, height);
 
   Vector2 TopRigthCorner() => new Vector2(transform.position.x + width / 2, transform.position.y + width / 2);
   Vector2 TopLeftCorner() => new Vector2(transform.position.x - width / 2, transform.position.y + width / 2);
