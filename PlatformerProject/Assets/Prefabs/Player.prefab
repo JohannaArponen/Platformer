@@ -55,10 +55,12 @@ MonoBehaviour:
   jumpStrength: 10
   moveSpeed: 5
   noMoveDecay: 10
-  baseGavity: 2
-  jumpPressGravity: 1.5
-  downPressGravity: 3
+  baseGavity: 20
+  onGroundGravity: 50
+  jumpPressGravity: 15
+  downPressGravity: 30
   collisionMargin: 0.1
+  maxSlopeAngle: 45
 --- !u!114 &7970692294856033175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,11 +88,11 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 6200000, guid: 397eea3f33050f6479b7009f864ac596, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!61 &-5871064214372496528
 BoxCollider2D:

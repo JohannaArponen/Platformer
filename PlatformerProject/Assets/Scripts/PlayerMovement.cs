@@ -14,11 +14,14 @@ public class PlayerMovement : MonoBehaviour {
   public float moveSpeed = 5f;
   public float noMoveDecay = 0.5f;
   public float baseGavity = 1f;
+  public float onGroundGravity = 10f;
   public float jumpPressGravity = 0.5f;
   public float downPressGravity = 1.5f;
 
   public float collisionMargin = 0.1f;
+  public float maxSlopeAngle = 45;
 
+  Vector2 gravity;
 
   Rigidbody2D rb;
   new BoxCollider2D collider;
@@ -29,7 +32,7 @@ public class PlayerMovement : MonoBehaviour {
   void Start() {
     rb = GetComponent<Rigidbody2D>();
     collider = GetComponent<BoxCollider2D>();
-    rb.gravityScale = baseGavity;
+    gravity = Vector2.down * baseGavity;
     width = collider.size.x;
     height = collider.size.y;
   }
@@ -40,20 +43,22 @@ public class PlayerMovement : MonoBehaviour {
     var righted = Righted();
     var lefted = Lefted();
 
-    rb.gravityScale = baseGavity;
+    gravity = gravity.normalized * baseGavity;
     if (Input.GetKeyDown(jumpKey) && floored) {
       rb.velocity -= new Vector2(0, rb.velocity.y); // normalize y
       rb.velocity += Vector2.up * jumpStrength;
+    } else if (floored) {
+      gravity = gravity.normalized * onGroundGravity;
     }
     if (Input.GetKey(jumpKey)) {
-      rb.gravityScale = jumpPressGravity;
+      gravity = gravity.normalized * jumpPressGravity;
     }
 
     if (Input.GetKey(down)) {
       if (floored) {
         // Crouch
       } else {
-        rb.gravityScale = downPressGravity;
+        gravity = gravity.normalized * downPressGravity;
       }
     }
     if (Input.GetKey(right) && rb.velocity.x < moveSpeed) {
@@ -65,6 +70,35 @@ public class PlayerMovement : MonoBehaviour {
     if (!Input.GetKey(left) && !Input.GetKey(right)) {
       rb.velocity -= new Vector2(rb.velocity.x * noMoveDecay, 0) * Time.deltaTime;
     }
+
+    rb.velocity += gravity * Time.deltaTime;
+  }
+
+  void OnCollisionEnter2D(Collision2D collision) => HugGround(collision.contacts[0].normal);
+  void OnCollisionStay2D(Collision2D collision) => HugGround(collision.contacts[0].normal);
+
+  void OnCollisionExit2D(Collision2D collision) {
+    gravity = Vector2.down * baseGavity;
+  }
+
+  void HugGround(Vector2 normal) {
+    if (Vector2.Angle(normal, Vector2.up) <= maxSlopeAngle) {
+      gravity = normal * -1;
+    } else {
+      gravity = Vector2.down * baseGavity;
+    }
+  }
+
+
+  public static Vector2 Rotate(Vector2 v, float degrees) {
+    float sin = Mathf.Sin(degrees * Mathf.Deg2Rad);
+    float cos = Mathf.Cos(degrees * Mathf.Deg2Rad);
+
+    float tx = v.x;
+    float ty = v.y;
+    v.x = (cos * tx) - (sin * ty);
+    v.y = (sin * tx) + (cos * ty);
+    return v;
   }
 
   RaycastHit2D Floored() => Physics2D.Raycast(BottomLeftCorner() - new Vector2(0, collisionMargin), Vector2.right, width);
