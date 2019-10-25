@@ -22,6 +22,16 @@ public class PlayerMovement : MonoBehaviour {
   public float collisionMargin = 0.1f;
   public float maxSlopeAngle = 45;
 
+  [System.Serializable]
+  public struct Animations {
+    public string move;
+    public string jump;
+    public string fall;
+    public string idle;
+    public string run;
+    public string crouch;
+  }
+
   Vector2 gravity;
 
   Rigidbody2D rb;
