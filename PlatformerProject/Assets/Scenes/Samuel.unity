@@ -212,6 +212,11 @@ PrefabInstance:
       propertyPath: layers.m_Bits
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 2424746296081903826, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: maxHeightStep
+      value: 0.15
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
 --- !u!1 &384721507

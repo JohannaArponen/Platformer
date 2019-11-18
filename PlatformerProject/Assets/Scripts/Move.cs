@@ -23,15 +23,13 @@ public class Move : MonoBehaviour {
   bool crouch = false;
   bool jump = false;
 
-  float height;
-  float width;
+  float2 size;
 
 
   void Start() {
     collider = GetComponent<BoxCollider2D>();
-    width = collider.bounds.size.x;
-    height = collider.bounds.size.y;
     gravity = defaultGravity;
+    size = new float2(collider.bounds.size.x, collider.bounds.size.y);
   }
 
   void Update() {
@@ -42,21 +40,20 @@ public class Move : MonoBehaviour {
     var moveVelocity = (move + velocity) * Time.deltaTime;
 
     for (int i = 0; i < maxPhysicsIters; i++) {
-      var contact = Physics2D.BoxCast(transform.position, new float2(width, height), 0, math.normalizesafe(moveVelocity, float2.zero), math.length(moveVelocity), layers);
+      var contact = Physics2D.BoxCast(transform.position, size, 0, math.normalizesafe(moveVelocity, float2.zero), math.length(moveVelocity), layers);
       if (contact) {
         // Height steps, stairs etc.
         var contactAngle = Vector2.Angle(Vector2.up, contact.normal);
         if (contactAngle > maxSlope) {
           for (int j = 0; j < maxHeightStepTests; j++) {
-            var pos = transform.position + new Vector3(0, maxHeightStep / i, 0);
-            var newContact = Physics2D.BoxCast(pos, new float2(width, height), 0, math.normalizesafe(moveVelocity, float2.zero), math.length(moveVelocity), layers);
+            var currentStep = maxHeightStep / (j + 1);
+            var pos = (Vector2)transform.position + new Vector2(0, currentStep);
+            var newContact = Physics2D.BoxCast(pos, size, 0, new float2(moveVelocity.x >= 0 ? 1 : -1, 0), math.abs(moveVelocity.x), layers);
+            if (newContact) Debug.DrawRay(newContact.point, newContact.normal * 1000, Color.yellow, 1);
             if (!newContact) {
-              contact = newContact;
-              var downVector = new float2(0, moveVelocity.y);
-              var downPos = pos + new Vector3(moveVelocity.x, 0, 0);
-              contact = Physics2D.BoxCast(downPos, new float2(width, height), 0, math.normalizesafe(downVector, float2.zero), math.length(downVector), layers);
-              Debug.DrawRay(contact.point, contact.normal * 1000, Color.yellow, 1);
-              break;
+              var downContact = Physics2D.BoxCast(pos + new Vector2(moveVelocity.x, 0), size, 0, new Vector2(0, -currentStep), currentStep, layers);
+              transform.position = downContact ? downContact.centroid + new Vector2(0, 0.01f) : pos + new Vector2(moveVelocity.x, -currentStep);
+              return;
             }
           }
         }
@@ -76,21 +73,21 @@ public class Move : MonoBehaviour {
         // Debug.DrawRay(contact.point, temp * 1000, Color.red, 1);
 
         if (contact.point.x > transform.position.x) {
-          newPos.x = math.max(transform.position.x, contact.point.x - height / 2);
+          newPos.x = math.max(transform.position.x, contact.point.x - size.y / 2);
         } else {
-          newPos.x = math.min(transform.position.x, contact.point.x + height / 2);
+          newPos.x = math.min(transform.position.x, contact.point.x + size.y / 2);
         }
 
         if (contact.point.y > transform.position.y) {
-          newPos.y = math.max(transform.position.y, contact.point.y - width / 2);
+          newPos.y = math.max(transform.position.y, contact.point.y - size.x / 2);
         } else {
-          newPos.y = math.min(transform.position.y, contact.point.y + width / 2);
+          newPos.y = math.min(transform.position.y, contact.point.y + size.x / 2);
         }
 
-        if (!Physics2D.BoxCast((Vector3)newPos, new float2(width, height), 0, math.normalizesafe(moveVelocity, float2.zero), 0, layers))
+        if (!Physics2D.BoxCast((Vector3)newPos, size, 0, math.normalizesafe(moveVelocity, float2.zero), 0, layers))
           transform.position = newPos;
       } else {
-        if (!Physics2D.BoxCast(transform.position + new Vector3(moveVelocity.x, moveVelocity.y, 0), new float2(width, height), 0, math.normalizesafe(moveVelocity, float2.zero), 0, layers))
+        if (!Physics2D.BoxCast(transform.position + new Vector3(moveVelocity.x, moveVelocity.y, 0), size, 0, math.normalizesafe(moveVelocity, float2.zero), 0, layers))
           transform.position += new Vector3(moveVelocity.x, moveVelocity.y, 0);
         break;
       }
