@@ -1,28 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Lifes : MonoBehaviour{
 
-    [System.Serializable]
-    public class PlayerStats{
-        public int Health = 100;
+    [HideInInspector]
+    public float startHealth = 100;
+    private float health;
+
+    public GameObject deathEffect;
+
+    [Header("Player Health")]
+    public Image healthBar;
+
+    void Start() {
+        health = startHealth;
     }
-
-    public PlayerStats playerStats = PlayerStats();
-
-    public int fallBoundary = -20;
-
-    void Update() {
-        if (transform.position.y <= -20) {
-            DamagePlayer(9999999);
-        }
-    }
-
-    public void DamagePlayer(int damage) {
-        playerStats.Health -= damage;
-        if (playerStats.Health <= 0) {
-            GameMaster.KillPlayer(this);
+    public void DamagePlayer(float amount) {
+        health -= amount;
+        healthBar.fillAmount = health / startHealth;
+        if(health <= 0) {
+            Die();
         }
     }
 }
