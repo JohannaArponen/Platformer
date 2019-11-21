@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 8743533794027903617}
   - component: {fileID: 4953458472901285445}
   - component: {fileID: 6104700143531518939}
-  - component: {fileID: 607602217}
+  - component: {fileID: 2233979047177552756}
   - component: {fileID: 607602214}
   m_Layer: 8
   m_Name: Player
@@ -166,7 +166,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.7, y: 0.7}
   m_EdgeRadius: 0
---- !u!114 &607602217
+--- !u!114 &2233979047177552756
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -175,19 +175,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 258820097050964185}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f75c3a3f83d583a4e993ff0231cc6be4, type: 3}
+  m_Script: {fileID: 11500000, guid: d2128a2edff3749449a75e3f22c70ad6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultGravity: 5
+  defaultGravity: 1000
   drag: 0.05
   maxSlopeAngle: 45
-  maxHeightStep: 0.125
-  maxHeightVerticalSteps: 10
-  maxHeightHorizontalSteps: 10
+  maxHeightStep: 0.1
+  maxHeightVerticalSteps: 1
+  maxHeightHorizontalSteps: 1
   layers:
     serializedVersion: 2
-    m_Bits: 55
+    m_Bits: 0
   maxPhysicsIters: 3
+  contactOffset: 0.003771
+  collisionTestLength: 0.01
+  steepVelocityProjectPower: 2
   gravity: 10
   velocity:
     x: 0
@@ -195,6 +198,14 @@ MonoBehaviour:
   staticVelocity:
     x: 0
     y: 0
+  debugVelocity:
+    x: 0
+    y: 0
+  onSlopeRight: 0
+  onSlopeLeft: 0
+  onSlope: 0
+  stationary: 0
+  slopeAngle: 0
 --- !u!114 &607602214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,10 +221,11 @@ MonoBehaviour:
   speed: 100
   useHorizontalAxisMove: 1
   axisMoveSmooth: 1
-  left: 0
-  right: 0
+  leftKey: 0
+  rightKey: 0
   useVerticalAxisJump: 1
   jumpKey: 0
+  jumpStrength: 0
   useVerticalAxisCrouch: 1
   crouchKey: 0
 --- !u!1 &7116313749340706640

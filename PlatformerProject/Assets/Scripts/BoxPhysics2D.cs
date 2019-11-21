@@ -61,7 +61,7 @@ public class BoxPhysics2D : MonoBehaviour {
   void LateUpdate() {
     var prevPos = transform.position;
     if (Input.GetKeyDown(KeyCode.R)) transform.position = Vector3.zero;
-    Main();
+    Physics();
     onGround = Physics2D.BoxCast(transform.position, size, 0, Vector2.down, collisionTestLength, layers);
     onCeiling = Physics2D.BoxCast(transform.position, size, 0, Vector2.up, collisionTestLength, layers);
     onRight = Physics2D.BoxCast(transform.position, size, 0, Vector2.right, collisionTestLength, layers);
@@ -83,7 +83,7 @@ public class BoxPhysics2D : MonoBehaviour {
     staticVelocity = float2.zero;
   }
 
-  void Main() {
+  void Physics() {
     float multiplier = math.max(0f, 1f - drag * Time.deltaTime);
     velocity *= multiplier;
     velocity.y -= gravity * Time.deltaTime;
