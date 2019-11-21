@@ -41,7 +41,7 @@ public class BoxPhysics2DController : MonoBehaviour {
     physics.staticVelocity.x += move;
 
     // Jump
-    if (physics.onGround && !physics.onSlope) {
+    if ((physics.onGround && !physics.onSlope) || physics.stationary) {
       if ((useVerticalAxisJump && Input.GetAxisRaw("Vertical") > 0) || Input.GetKey(jumpKey)) {
         physics.velocity.y = jumpStrength;
       }
