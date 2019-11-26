@@ -4,12 +4,13 @@ using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(SpriteRenderer))]
-public abstract class EnemyClass : MonoBehaviour {
+public abstract class Enemy : MonoBehaviour {
 
-  private float health = 1;
-  private float damage = 1;
-  private float collisionDamage = 1;
-  private float invulnerabilityDuration = 1;
+  protected abstract float health { get; set; }
+  protected abstract float damage { get; set; }
+  protected abstract float collisionDamage { get; set; }
+  protected abstract float invulnerabilityDuration { get; set; }
+  protected abstract float activeDistanceFromView { get; set; }
   private float invulnerabilityStart = float.NegativeInfinity;
 
   private bool activated = false;
@@ -34,13 +35,12 @@ public abstract class EnemyClass : MonoBehaviour {
     cam = Camera.main;
     sr = GetComponent<SpriteRenderer>();
     Updaterect();
-    inView = GetCamRect().Overlaps(rect);
+    inView = GetSpawnRect().Overlaps(rect);
     if (inView) OnEnterView();
-    else OnExitView();
   }
 
   public void Update() {
-    if (GetCamRect().Overlaps(rect)) {
+    if (GetSpawnRect().Overlaps(rect)) {
       if (!inView) {
         inView = true;
         OnEnterView();
@@ -60,9 +60,9 @@ public abstract class EnemyClass : MonoBehaviour {
     rect = new Rect(sr.bounds.min.xy(), sr.bounds.size.xy());
   }
 
-  protected Rect GetCamRect() {
-    var topLeft = cam.ViewportToWorldPoint(Vector2.zero).xy();
-    var bottomRight = cam.ViewportToWorldPoint(Vector2.one).xy();
+  protected Rect GetSpawnRect() {
+    var topLeft = cam.ViewportToWorldPoint(Vector2.zero).xy().AddXY(-activeDistanceFromView);
+    var bottomRight = cam.ViewportToWorldPoint(Vector2.one).xy().AddXY(activeDistanceFromView);
     Updaterect();
     MyUtil.DrawBoxXY(topLeft, bottomRight - topLeft, Color.green);
     MyUtil.DrawBoxXY(sr.bounds.min.xy(), sr.bounds.size.xy(), Color.cyan);

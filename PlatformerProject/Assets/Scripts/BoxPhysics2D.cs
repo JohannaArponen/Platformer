@@ -22,7 +22,7 @@ public class BoxPhysics2D : MonoBehaviour {
   [Tooltip("Maximum amount of raycast done to check for walkable obstacles (distance). Each iteration the value is halved")]
   public int maxHeightHorizontalSteps = 1;
   [Tooltip("Layers which are checked by the raycasts")]
-  public LayerMask layers;
+  public ContactFilter2D layers;
   [Tooltip("Maximum physics box raycasts. When a raycast collides, a new raycast is done along its vector")]
   public int maxPhysicsIters = 3;
   [Tooltip("Avoid getting stuck inside colliders by offsetting collision positions")]
@@ -55,15 +55,28 @@ public class BoxPhysics2D : MonoBehaviour {
   private Vector3 prevPos;
   private TransformData colPrevTransform;
 
-  private BoxCollider2D col;
+  private Collider2D col;
+  private Rigidbody2D rb;
   private Vector2 size;
 
 
 
   void Start() {
     col = GetComponent<BoxCollider2D>();
+    rb = GetComponent<Rigidbody2D>();
     gravity = defaultGravity;
     size = col.bounds.size.xy();
+  }
+
+  private RaycastHit2D GetFirstHit(Vector2 start, Vector2 dir, float distance = float.PositiveInfinity) {
+    var prevPos = transform.position;
+    transform.position = start;
+    Physics2D.SyncTransforms();
+    var results = new RaycastHit2D[1];
+    var res = col.Cast(dir, layers, results, distance);
+    transform.position = prevPos;
+    Physics2D.SyncTransforms();
+    return res > 0 ? results[0] : new RaycastHit2D();
   }
 
   void LateUpdate() {
@@ -71,11 +84,13 @@ public class BoxPhysics2D : MonoBehaviour {
     if (moveWithGround && validPrevcollider && onGround) MoveWithGround();
     var postMovePos = transform.position;
     if (Input.GetKeyDown(KeyCode.R)) transform.position = Vector3.zero;
+
     Physics();
-    onGround = Physics2D.BoxCast(transform.position, size, 0, Vector2.down, collisionTestLength, layers);
-    onCeiling = Physics2D.BoxCast(transform.position, size, 0, Vector2.up, collisionTestLength, layers);
-    onRight = Physics2D.BoxCast(transform.position, size, 0, Vector2.right, collisionTestLength, layers);
-    onLeft = Physics2D.BoxCast(transform.position, size, 0, Vector2.left, collisionTestLength, layers);
+
+    onGround = GetFirstHit(transform.position, Vector2.down, collisionTestLength);
+    onCeiling = GetFirstHit(transform.position, Vector2.up, collisionTestLength);
+    onRight = GetFirstHit(transform.position, Vector2.right, collisionTestLength);
+    onLeft = GetFirstHit(transform.position, Vector2.left, collisionTestLength);
 
     stationary = postMovePos == transform.position && onGround;
 
@@ -101,12 +116,14 @@ public class BoxPhysics2D : MonoBehaviour {
 
   void MoveWithGround() {
     var colGo = onGround.collider.gameObject;
+    if (colGo.isStatic) return; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
     Physics2D.SyncTransforms();
     var dir = colPrevTransform.position.xy() - colGo.transform.position.xy();
-    var hit = Physics2D.BoxCast(prevPos, size, 0, math.normalizesafe(dir), dir.magnitude, layers);
+    var hit = GetFirstHit(prevPos, math.normalizesafe(dir), dir.magnitude);
     if (!hit) {
       transform.position += colGo.transform.position - colPrevTransform.position;
+      // Rotation and scaling is not accounted for
       // transform.rotation = colTransform.rotation * Quaternion.Inverse(colNewTransform.rotation) * transform.rotation;
       // transform.localScale += colTransform.localScale - colNewTransform.localScale;
     } else {
@@ -122,7 +139,7 @@ public class BoxPhysics2D : MonoBehaviour {
     velocity.y -= gravity * Time.deltaTime;
 
 
-    if (Physics2D.BoxCast(transform.position, size, 0, Vector2.one.xo(), 0, layers))
+    if (GetFirstHit(transform.position, Vector2.one.xo(), 0))
       transform.position += new Vector3(0, 0.1f, 0);
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime;
@@ -130,7 +147,7 @@ public class BoxPhysics2D : MonoBehaviour {
     var targetPos = transform.position.AddXY(endVel);
     for (int i = 0; i < maxPhysicsIters; i++) {
       // endVel = (targetPos - transform.position).xy();
-      var contact = Physics2D.BoxCast(transform.position, size, 0, math.normalizesafe(endVel), math.length(endVel), layers);
+      var contact = GetFirstHit(transform.position, math.normalizesafe(endVel), math.length(endVel));
       if (contact) {
         // Height steps, stairs etc.
         var contactAngle = Vector2.Angle(Vector2.up, contact.normal);
@@ -145,7 +162,7 @@ public class BoxPhysics2D : MonoBehaviour {
             float verStep = 0;
             for (int k = 0; k < maxHeightHorizontalSteps; k++) {
               verStep = endVel.x / (k + 1);
-              verContact = Physics2D.BoxCast(pos, size, 0, new float2(endVel.x >= 0 ? 1 : -1, 0), math.abs(verStep), layers);
+              verContact = GetFirstHit(pos, new float2(endVel.x >= 0 ? 1 : -1, 0), math.abs(verStep));
               if (!verContact)
                 break;
               else if (k == maxHeightHorizontalSteps - 1) {
@@ -155,10 +172,10 @@ public class BoxPhysics2D : MonoBehaviour {
             }
             if (breakOuter) break;
 
-            var downContact = Physics2D.BoxCast(pos.AddX(verStep), size, 0, new Vector2(0, -currentStep), currentStep, layers);
+            var downContact = GetFirstHit(pos.AddX(verStep), new Vector2(0, -currentStep), currentStep);
             if (downContact && Vector2.Angle(Vector2.up, downContact.normal) < maxSlopeAngle) {
               var newPos2 = downContact ? downContact.centroid.AddY(contactOffset) : pos + new Vector2(verStep, -currentStep);
-              if (!Physics2D.BoxCast(newPos2, size, 0, Vector2.zero, 0, layers))
+              if (!GetFirstHit(newPos2, Vector2.zero, 0))
                 transform.position = newPos2;
               return;
             }
@@ -187,36 +204,36 @@ public class BoxPhysics2D : MonoBehaviour {
             newPos.y = math.max(transform.position.y, contact.point.y - size.x / 2 - contactOffset);
           else
             newPos.y = math.min(transform.position.y, contact.point.y + size.y / 2 + contactOffset);
-          if (!Physics2D.BoxCast(newPos, size, 0, Vector2.one.xo(), 0, layers) || Input.GetKeyDown(KeyCode.P)) {
+          if (!GetFirstHit(newPos, Vector2.one.xo(), 0) || Input.GetKeyDown(KeyCode.P)) {
             transform.position = newPos;
           }
         }
       } else {
 
         // Free move
-        if (!Physics2D.BoxCast(transform.position.AddXY(endVel), size, 0, Vector2.zero, 0, layers))
+        if (!GetFirstHit(transform.position.AddXY(endVel), Vector2.zero, 0))
           transform.position += new Vector3(endVel.x, endVel.y);
 
         // Down slopes
         if (onGround) {
-          var downContact = Physics2D.BoxCast(transform.position, size, 0, Vector2.down, math.abs(endVel.x) * math.tan(maxSlopeAngle * Mathf.Deg2Rad) + maxHeightStep, layers);
+          var downContact = GetFirstHit(transform.position, Vector2.down, math.abs(endVel.x) * math.tan(maxSlopeAngle * Mathf.Deg2Rad) + maxHeightStep);
 
           if (downContact && (math.abs(downContact.normal.x) < 0.00001f || (endVel.x < 0 == downContact.normal.x < 0)) && Vector2.Angle(Vector2.up, downContact.normal) <= maxSlopeAngle) {
             Debug.DrawRay(downContact.point, downContact.normal, Color.green);
             var newPos = downContact.centroid;
             newPos.y += contactOffset;
-            if (!Physics2D.BoxCast(newPos, size, 0, Vector2.one.xo(), 0, layers))
+            if (!GetFirstHit(newPos, Vector2.one.xo(), 0))
               transform.position = newPos;
             else {
               newPos.x += contactOffset * math.sign(endVel.x) * 2;
-              if (!Physics2D.BoxCast(newPos, size, 0, Vector2.one.xo(), 0, layers))
+              if (!GetFirstHit(newPos, Vector2.one.xo(), 0))
                 transform.position = newPos;
             }
           }
         }
         break;
       }
-      if (endVel.Equals(Vector2.one.xo())) {
+      if (endVel.Equals(Vector2.one)) {
         break;
       }
     }
