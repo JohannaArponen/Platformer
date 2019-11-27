@@ -73,7 +73,7 @@ public class BoxPhysics2D : MonoBehaviour {
     transform.position = start;
     Physics2D.SyncTransforms();
     var results = new RaycastHit2D[1];
-    var res = col.Cast(dir, layers, results, distance);
+    var res = rb.Cast(dir, layers, results, distance);
     transform.position = prevPos;
     Physics2D.SyncTransforms();
     return res > 0 ? results[0] : new RaycastHit2D();
@@ -92,7 +92,7 @@ public class BoxPhysics2D : MonoBehaviour {
     onRight = GetFirstHit(transform.position, Vector2.right, collisionTestLength);
     onLeft = GetFirstHit(transform.position, Vector2.left, collisionTestLength);
 
-    stationary = postMovePos == transform.position && onGround;
+    stationary = postMovePos == transform.position;
 
     if (onGround) {
       if (moveWithGround) {
@@ -118,7 +118,6 @@ public class BoxPhysics2D : MonoBehaviour {
     var colGo = onGround.collider.gameObject;
     if (colGo.isStatic) return; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
-    Physics2D.SyncTransforms();
     var dir = colPrevTransform.position.xy() - colGo.transform.position.xy();
     var hit = GetFirstHit(prevPos, math.normalizesafe(dir), dir.magnitude);
     if (!hit) {
