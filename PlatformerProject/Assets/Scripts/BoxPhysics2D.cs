@@ -190,6 +190,7 @@ public class BoxPhysics2D : MonoBehaviour {
         else
           velocity *= math.abs(math.normalizesafe(contact.normal)) * -1 + 1;
         var oldVel = endVel;
+        // !!! Project also removes velocity that is towards the normal
         endVel = Vector3.Project((Vector2)endVel, Quaternion.Euler(0, 0, 90) * contact.normal).xy();
         // targetPos = transform.position.Add2XY(endVel);
 
