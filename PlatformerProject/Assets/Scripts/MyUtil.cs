@@ -11,11 +11,18 @@ public static class MyUtil {
     Debug.DrawLine(pos + new float3(0, 0, -radius), pos + new float3(0, 0, radius), color, duration);
   }
 
-  public static void DrawBox(float2 pos, Color color = new Color(), float duration = 0) {
-    Debug.DrawLine(new float3(pos.x, 0, pos.y), new float3(pos.x + 1, 0, pos.y), color, duration);
-    Debug.DrawLine(new float3(pos.x, 0, pos.y), new float3(pos.x, 0, pos.y + 1), color, duration);
-    Debug.DrawLine(new float3(pos.x + 1, 0, pos.y + 1), new float3(pos.x + 1, 0, pos.y), color, duration);
-    Debug.DrawLine(new float3(pos.x + 1, 0, pos.y + 1), new float3(pos.x, 0, pos.y + 1), color, duration);
+  public static void DrawBox(float2 pos, float2 size, Color color = new Color(), float duration = 0) {
+    Debug.DrawLine(new float3(pos.x, 0, pos.y), new float3(pos.x + size.x, 0, pos.y), color, duration);
+    Debug.DrawLine(new float3(pos.x, 0, pos.y), new float3(pos.x, 0, pos.y + size.y), color, duration);
+    Debug.DrawLine(new float3(pos.x + size.x, 0, pos.y + size.y), new float3(pos.x + size.x, 0, pos.y), color, duration);
+    Debug.DrawLine(new float3(pos.x + size.x, 0, pos.y + size.y), new float3(pos.x, 0, pos.y + size.y), color, duration);
+  }
+
+  public static void DrawBoxXY(float2 pos, float2 size, Color color = new Color(), float duration = 0) {
+    Debug.DrawLine(new float3(pos.x, pos.y, 0), new float3(pos.x + size.x, pos.y, 0), color, duration);
+    Debug.DrawLine(new float3(pos.x, pos.y, 0), new float3(pos.x, pos.y + size.y, 0), color, duration);
+    Debug.DrawLine(new float3(pos.x + size.x, pos.y + size.y, 0), new float3(pos.x + size.x, pos.y, 0), color, duration);
+    Debug.DrawLine(new float3(pos.x + size.x, pos.y + size.y, 0), new float3(pos.x, pos.y + size.y, 0), color, duration);
   }
 
   public static void DrawCube(float3 pos, Color color = new Color(), float duration = 0) {
