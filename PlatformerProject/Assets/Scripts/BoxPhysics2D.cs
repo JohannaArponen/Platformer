@@ -38,21 +38,17 @@ public class BoxPhysics2D : MonoBehaviour {
   public float2 velocity;
   [Tooltip("Velocity which is not affected by gravity or drag. Resets every update")]
   public float2 staticVelocity;
+  [Tooltip("Velocity which is not affected by deltaTime, gravity or drag")]
+  public float2 pureVelocity;
   [Tooltip("Velocity which is not affected by gravity or drag")]
   public float2 debugVelocity;
 
-  [HideInInspector] public RaycastHit2D onGround;
-  [HideInInspector] public RaycastHit2D onCeiling;
-  [HideInInspector] public RaycastHit2D onRight;
-  [HideInInspector] public RaycastHit2D onLeft;
-  [HideInInspector] public bool onSlopeRight;
-  [HideInInspector] public bool onSlopeLeft;
-  [HideInInspector] public bool onSlope;
+  [HideInInspector] public RaycastHit2D onGround, onCeiling, onRight, onLeft;
+  [HideInInspector] public bool onSlopeRight, onSlopeLeft, onSlope;
   [HideInInspector] public bool stationary;
   [HideInInspector] public float slopeAngle;
 
   private bool validPrevcollider = false;
-  private Vector3 prevPos;
   private TransformData colPrevTransform;
 
   private Collider2D col;
@@ -80,7 +76,6 @@ public class BoxPhysics2D : MonoBehaviour {
   }
 
   void LateUpdate() {
-    prevPos = transform.position;
     if (moveWithGround && validPrevcollider && onGround) MoveWithGround();
     var postMovePos = transform.position;
     if (Input.GetKeyDown(KeyCode.R)) transform.position = Vector3.zero;
@@ -118,18 +113,32 @@ public class BoxPhysics2D : MonoBehaviour {
     var colGo = onGround.collider.gameObject;
     if (colGo.isStatic) return; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
-    var dir = colPrevTransform.position.xy() - colGo.transform.position.xy();
-    var hit = GetFirstHit(prevPos, math.normalizesafe(dir), dir.magnitude);
+    var dir = (colGo.transform.position - colPrevTransform.position).xy();
+    var hit = GetFirstHit(transform.position, math.normalizesafe(dir), dir.magnitude);
     if (!hit) {
       transform.position += colGo.transform.position - colPrevTransform.position;
-      // Rotation and scaling is not accounted for
+      // !!! Rotation and scaling is not accounted for
       // transform.rotation = colTransform.rotation * Quaternion.Inverse(colNewTransform.rotation) * transform.rotation;
       // transform.localScale += colTransform.localScale - colNewTransform.localScale;
-    } else {
-      print("uh");
+    } else { // GetFirstHit(newPos, Vector2.one.xo(), 0)
+      var newPos = GetCollisionPosition(transform.position, hit).xyo();
+      if (!GetFirstHit(newPos, Vector2.one.xo(), 0))
+        transform.position = newPos;
     }
 
     colGo.SetActive(true);
+  }
+
+  public Vector2 GetCollisionPosition(Vector2 pos, RaycastHit2D contact) {
+    var newPos = new Vector2();
+
+    if (contact.point.x > pos.x) newPos.x = math.max(pos.x, contact.point.x - size.y / 2 - contactOffset);
+    else newPos.x = math.min(pos.x, contact.point.x + size.x / 2 + contactOffset);
+
+    if (contact.point.y > pos.y) newPos.y = math.max(pos.y, contact.point.y - size.x / 2 - contactOffset);
+    else newPos.y = math.min(pos.y, contact.point.y + size.y / 2 + contactOffset);
+
+    return newPos;
   }
 
   void Physics() {
@@ -137,15 +146,13 @@ public class BoxPhysics2D : MonoBehaviour {
     velocity *= multiplier;
     velocity.y -= gravity * Time.deltaTime;
 
-
+    // Check if inside a collider, if so move up
     if (GetFirstHit(transform.position, Vector2.one.xo(), 0))
       transform.position += new Vector3(0, 0.1f, 0);
 
-    var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime;
+    var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
 
-    var targetPos = transform.position.AddXY(endVel);
     for (int i = 0; i < maxPhysicsIters; i++) {
-      // endVel = (targetPos - transform.position).xy();
       var contact = GetFirstHit(transform.position, math.normalizesafe(endVel), math.length(endVel));
       if (contact) {
         // Height steps, stairs etc.
@@ -184,30 +191,23 @@ public class BoxPhysics2D : MonoBehaviour {
         // Handle slopes affecting velocity and stuff
         if (!isSteep)
           endVel.y = 0;
-        var newPos = new Vector3();
         if (isSteep && contactAngle < 90)
-          velocity *= math.pow(math.normalizesafe(contact.normal) * -1 + 1, steepVelocityProjectPower);
+          velocity *= math.pow((float2)contact.normal * -1 + 1, steepVelocityProjectPower);
+        else if (!onGround && velocity.y < 0 && contactAngle > 90)
+          velocity.x *= math.abs(contact.normal.x) * -1 + 1;
         else
-          velocity *= math.abs(math.normalizesafe(contact.normal)) * -1 + 1;
-        var oldVel = endVel;
-        // !!! Project also removes velocity that is towards the normal
-        endVel = Vector3.Project((Vector2)endVel, Quaternion.Euler(0, 0, 90) * contact.normal).xy();
-        // targetPos = transform.position.Add2XY(endVel);
+          velocity *= math.abs(contact.normal) * -1 + 1;
 
-        if (math.length(oldVel) > 0.01f) { // Prevent jitter caused by contact offset. Maybe useless
-          if (contact.point.x > transform.position.x)
-            newPos.x = math.max(transform.position.x, contact.point.x - size.y / 2 - contactOffset);
-          else
-            newPos.x = math.min(transform.position.x, contact.point.x + size.x / 2 + contactOffset);
+        if (math.length(endVel) > 0.01f) { // Prevent jitter caused by contact offset. Maybe useless
+          var newPos = GetCollisionPosition(transform.position, contact);
 
-          if (contact.point.y > transform.position.y)
-            newPos.y = math.max(transform.position.y, contact.point.y - size.x / 2 - contactOffset);
-          else
-            newPos.y = math.min(transform.position.y, contact.point.y + size.y / 2 + contactOffset);
-          if (!GetFirstHit(newPos, Vector2.one.xo(), 0) || Input.GetKeyDown(KeyCode.P)) {
+          if (!GetFirstHit(newPos, Vector2.one.xo(), 0) || Input.GetKeyDown(KeyCode.P))
             transform.position = newPos;
-          }
         }
+        // Project velocity along normal of collision
+        // !!! causes jitter when trying to go up a too steep slope (somehow determine to not do it when going towards a too steep slope)
+        endVel = Vector3.Project((Vector2)endVel, Quaternion.Euler(0, 0, 90) * contact.normal).xy();
+
       } else {
 
         // Free move

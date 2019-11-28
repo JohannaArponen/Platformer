@@ -198,7 +198,7 @@ MonoBehaviour:
     maxNormalAngle: 0
   maxPhysicsIters: 3
   contactOffset: 0.003771
-  collisionTestLength: 0.01
+  collisionTestLength: 0.1
   steepVelocityProjectPower: 0.01
   gravity: 0
   velocity:
