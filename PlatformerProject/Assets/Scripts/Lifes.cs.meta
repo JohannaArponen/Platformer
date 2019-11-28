@@ -1,9 +1,22 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
+guid: 37ed157703cc24243adc85b0cf6497f7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - healthElement: {instanceID: 0}
+  - canvas: {instanceID: 0}
+  - deathEffect: {fileID: 258820097050964185, guid: 0fb479a613e72054194f47847dc0f751,
+      type: 3}
+  - healthBar: {instanceID: 0}
+=======
 guid: a687920b6b770264aa13600f5733b85e
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences: []
+>>>>>>> 6170f616b6c73dfbca6b9a43c97087fd84d9561e
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
