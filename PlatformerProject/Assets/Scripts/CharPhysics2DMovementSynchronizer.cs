@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// This component allows moving colliders to more accurately collide with BoxPhysics2D objects
+/// This component allows moving colliders to more accurately collide with CharPhysics2D objects
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-public class BoxPhysics2DMovementSynchronizer : MonoBehaviour {
+public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
 
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
-  [Tooltip("Check collisions with BoxPhysics2D objects with a raycast. Otherwise only direct collions are tested")]
+  [Tooltip("Check collisions with CharPhysics2D objects with a raycast. Otherwise only direct collions are tested")]
   public bool sweep = false;
 
   private Vector3 prevPos = Vector3.zero;
@@ -65,7 +65,7 @@ public class BoxPhysics2DMovementSynchronizer : MonoBehaviour {
   }
 
   bool CheckResult(Collider2D collider) {
-    if (collider.GetComponent<BoxPhysics2D>()) {
+    if (collider.GetComponent<CharPhysics2D>()) {
       // Check collision point
       // Move based on that etc etc
       return true;

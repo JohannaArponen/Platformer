@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
-public class BoxPhysics2D : MonoBehaviour {
+public class CharPhysics2D : MonoBehaviour {
 
   [Tooltip("Default gravity")]
   public float defaultGravity = 1000f;
