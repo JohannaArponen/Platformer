@@ -42,16 +42,16 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
 
     var dir = prevPos - newPos;
     var results = new List<RaycastHit2D>();
-
     if (rb == null) col.Cast(dir.normalized, layers, results, dir.magnitude);
     else rb.Cast(dir.normalized, layers, results, dir.magnitude);
 
-    foreach (var hit in results)
-      if (CheckResult(hit.collider))
-        break;
-
     transform.position = newPos;
     Physics2D.SyncTransforms();
+
+    foreach (var hit in results)
+      if (CheckResult(hit))
+        break;
+
   }
 
   void Overlaps() {
@@ -64,8 +64,21 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
         break;
   }
 
+  bool CheckResult(RaycastHit2D hit) {
+    if (hit.collider.GetComponent<CharPhysics2D>()) {
+      var move = prevPos - transform.position * (1 - hit.fraction);
+      var hitPos = prevPos - transform.position * (hit.fraction);
+      Debug.DrawRay(hitPos, move, Color.red, 1);
+      // Check collision point
+      // Move based on that etc etc
+      return true;
+    }
+    return false;
+  }
+
   bool CheckResult(Collider2D collider) {
     if (collider.GetComponent<CharPhysics2D>()) {
+      // var dist = collider
       // Check collision point
       // Move based on that etc etc
       return true;
