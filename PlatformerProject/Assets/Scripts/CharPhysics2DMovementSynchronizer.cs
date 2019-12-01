@@ -37,21 +37,22 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
 
   void Sweep() {
     var newPos = transform.position;
-    transform.position = prevPos;
-    Physics2D.SyncTransforms();
+    if (transform.position != prevPos) {
+      transform.position = prevPos;
+      Physics2D.SyncTransforms();
 
-    var dir = prevPos - newPos;
-    var results = new List<RaycastHit2D>();
-    if (rb == null) col.Cast(dir.normalized, layers, results, dir.magnitude);
-    else rb.Cast(dir.normalized, layers, results, dir.magnitude);
+      var dir = prevPos - newPos;
+      var results = new List<RaycastHit2D>();
+      if (rb == null) col.Cast(dir.normalized, layers, results, dir.magnitude);
+      else rb.Cast(dir.normalized, layers, results, dir.magnitude);
 
-    transform.position = newPos;
-    Physics2D.SyncTransforms();
+      transform.position = newPos;
+      Physics2D.SyncTransforms();
 
-    foreach (var hit in results)
-      if (CheckResult(hit))
-        break;
-
+      foreach (var hit in results)
+        if (CheckResult(hit))
+          break;
+    }
   }
 
   void Overlaps() {
@@ -66,9 +67,12 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
 
   bool CheckResult(RaycastHit2D hit) {
     if (hit.collider.GetComponent<CharPhysics2D>()) {
-      var move = prevPos - transform.position * (1 - hit.fraction);
-      var hitPos = prevPos - transform.position * (hit.fraction);
+      var move = transform.position - prevPos;
+      var hitPos = prevPos + move * (hit.fraction);
+      MyUtil.DrawCross(hitPos, 0.1f, Color.green, 1);
       Debug.DrawRay(hitPos, move, Color.red, 1);
+      MyUtil.DrawCross(hitPos + move, 0.1f, Color.blue, 1);
+      hit.collider.transform.Translate(move);
       // Check collision point
       // Move based on that etc etc
       return true;
