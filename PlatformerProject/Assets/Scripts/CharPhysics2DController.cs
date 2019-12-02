@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoxPhysics2DController : MonoBehaviour {
+public class CharPhysics2DController : MonoBehaviour {
   public float speed;
   public bool useHorizontalAxisMove = true;
   public bool axisMoveSmooth = true;
@@ -14,10 +14,10 @@ public class BoxPhysics2DController : MonoBehaviour {
   public bool useVerticalAxisCrouch = true;
   public KeyCode crouchKey;
 
-  private BoxPhysics2D physics;
+  private CharPhysics2D physics;
 
   void Start() {
-    physics = GetComponent<BoxPhysics2D>();
+    physics = GetComponent<CharPhysics2D>();
   }
 
   // Update is called once per frame
