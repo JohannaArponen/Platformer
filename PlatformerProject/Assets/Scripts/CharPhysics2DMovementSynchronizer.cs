@@ -6,6 +6,7 @@ using UnityEngine;
 /// This component allows moving colliders to more accurately collide with CharPhysics2D objects
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(CharPhysics2D))]
 public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
 
   [Tooltip("Layers which are checked by the raycasts")]

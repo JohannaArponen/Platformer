@@ -69,11 +69,13 @@ public abstract class Enemy : MonoBehaviour {
     return new Rect(topLeft, bottomRight - topLeft);
   }
 
-  public void OnCollisionEnter2D(Collision2D col) {
-    if (Time.time > invulnerabilityStart + invulnerabilityDuration && col.gameObject.tag == "PlayerWeapon") {
-      // gameObject.GetComponent<Weapon>();
-      invulnerabilityStart = Time.time;
-      OnHit(1, col);
+  public void OnCollisionEnter2D(Collision2D collision) {
+    if (Time.time > invulnerabilityStart + invulnerabilityDuration) {
+      var weapon = collision.collider.gameObject.GetComponent<Weapon>();
+      if (weapon != null) {
+        invulnerabilityStart = Time.time;
+        OnHit(weapon.damage, collision);
+      }
     }
   }
 

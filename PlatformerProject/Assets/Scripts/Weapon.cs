@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class Attack : MonoBehaviour {
+public class Weapon : MonoBehaviour {
 
   public KeyCode attack = KeyCode.X;
+  public float damage = 1;
   public float startAngle;
   public float endAngle;
   public float duration;
