@@ -13,20 +13,20 @@ public abstract class Enemy : MonoBehaviour {
   protected abstract float activeDistanceFromView { get; set; }
   private float invulnerabilityStart = float.NegativeInfinity;
 
-  private bool activated = false;
+  private bool _activated = false;
 
   private Camera cam;
   private bool inView;
   private Rect rect;
   private SpriteRenderer sr;
 
-  public bool Activated {
-    get => activated; set {
-      if (!activated && value)
+  public bool activated {
+    get => _activated; set {
+      if (!_activated && value)
         OnActivate();
-      else if (activated && !value)
+      else if (_activated && !value)
         OnDeactivate();
-      activated = value;
+      _activated = value;
     }
   }
 
@@ -51,7 +51,7 @@ public abstract class Enemy : MonoBehaviour {
         OnExitView();
       }
     }
-    if (Activated) {
+    if (activated) {
       EnemyUpdate();
     }
   }
