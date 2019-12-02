@@ -17,6 +17,8 @@ public class CharPhysics2D : MonoBehaviour {
   public bool airHeightStep = false;
   [Tooltip("Move with the collider which is stood on")]
   public bool moveWithGround = true;
+  [Tooltip("Ignores collides belonging to children by disabling and enabling them when collision checks are done")]
+  public bool ignoreChildColliders = true;
   [Tooltip("Maximum amount of raycast done to check for walkable obstacles (height). Each iteration the value is halved")]
   public int maxHeightVerticalSteps = 1;
   [Tooltip("Maximum amount of raycast done to check for walkable obstacles (distance). Each iteration the value is halved")]
@@ -76,6 +78,16 @@ public class CharPhysics2D : MonoBehaviour {
   }
 
   void LateUpdate() {
+    List<bool> preDisabled = new List<bool>();
+    List<Transform> children = new List<Transform>();
+    if (ignoreChildColliders) {
+      foreach (Transform child in transform) {
+        preDisabled.Add(!child.gameObject.activeSelf);
+        children.Add(child);
+        child.gameObject.SetActive(false);
+      }
+    }
+
     if (moveWithGround && validPrevcollider && onGround) MoveWithGround();
     var postMovePos = transform.position;
     if (Input.GetKeyDown(KeyCode.R)) transform.position = Vector3.zero;
@@ -90,15 +102,15 @@ public class CharPhysics2D : MonoBehaviour {
     stationary = postMovePos == transform.position;
 
     if (onGround) {
-      if (moveWithGround) {
-        colPrevTransform = onGround.collider.gameObject.transform.Save();
-        validPrevcollider = true;
-      }
-
       slopeAngle = Vector2.Angle(Vector2.up, onGround.normal);
       onSlopeRight = !onSlopeLeft && slopeAngle > maxSlopeAngle && onGround.normal.x < 0;
       onSlopeLeft = slopeAngle > maxSlopeAngle && onGround.normal.x >= 0;
       onSlope = onSlopeLeft || onSlopeRight;
+
+      if (moveWithGround && !onSlope) {
+        colPrevTransform = onGround.collider.gameObject.transform.Save();
+        validPrevcollider = true;
+      }
     } else {
       validPrevcollider = false;
       slopeAngle = 0;
@@ -107,6 +119,14 @@ public class CharPhysics2D : MonoBehaviour {
       onSlope = false;
     }
     staticVelocity = Vector2.zero;
+
+    if (ignoreChildColliders) {
+      for (int i = 0; i < preDisabled.Count; i++) {
+        if (!preDisabled[i]) {
+          children[i].gameObject.SetActive(true);
+        }
+      }
+    }
   }
 
   void MoveWithGround() {
