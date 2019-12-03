@@ -5938,15 +5938,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4656773028732009192, guid: 0fb479a613e72054194f47847dc0f751,
-        type: 3}
-      propertyPath: ignoreChildColliders
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7280497764010111120, guid: 0fb479a613e72054194f47847dc0f751,
-        type: 3}
-      propertyPath: cooldown
-      value: 0.2
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}

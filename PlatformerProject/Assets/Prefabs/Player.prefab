@@ -205,7 +205,7 @@ GameObject:
   - component: {fileID: 7280497764010111120}
   m_Layer: 0
   m_Name: Weapon
-  m_TagString: Untagged
+  m_TagString: PlayerWeapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -263,6 +263,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attack: 120
+  damage: 1
   startAngle: 0
   endAngle: 180
   duration: 0.125
@@ -313,7 +314,7 @@ Rigidbody2D:
   m_GameObject: {fileID: 6644812756781074757}
   m_BodyType: 1
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
@@ -368,9 +369,9 @@ MonoBehaviour:
   maxHeightStep: 0.125
   airHeightStep: 0
   moveWithGround: 1
-  ignoreChildColliders: 0
-  maxHeightVerticalSteps: 10
-  maxHeightHorizontalSteps: 10
+  ignoreChildColliders: 1
+  maxHeightVerticalSteps: 2
+  maxHeightHorizontalSteps: 2
   layers:
     useTriggers: 0
     useLayerMask: 0

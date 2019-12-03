@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CharPhysics2D))]
 public class CharPhysics2DController : MonoBehaviour {
   public float speed;
   public bool useHorizontalAxisMove = true;
