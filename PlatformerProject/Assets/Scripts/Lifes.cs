@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+//using UnityEngine.SceneManagement;
 
 public class Lifes : MonoBehaviour{
+
+    //public Text centerText;
 
     [HideInInspector]
     public float startHealth = 100;
     private float health;
     public GameObject healthElement;
     public Canvas canvas;
+    
     public float gap = 5;
     private List<GameObject> elements = new List<GameObject>();
 
@@ -44,6 +48,13 @@ public class Lifes : MonoBehaviour{
         }
     }
     void Die() {
+       /* health--;
+        if(health <= 0) {
+            string str = "Game Over!";
+            print("Game Over");
+            centerText.text = str;
+            Time.timeScale = 0f;
+        }*/
         print("Die!!");
     }
 }
