@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CharPhysics2DEnemyAI))]
 public class TestEnemy : Enemy {
 
 
@@ -17,20 +18,31 @@ public class TestEnemy : Enemy {
   private float _invulnerabilityDuration = 1;
   private float _activeDistanceFromView = 2;
 
+  private CharPhysics2D physics;
+  private CharPhysics2DEnemyAI ai;
+
+  override protected void OnCreate() {
+    physics = GetComponent<CharPhysics2D>();
+    ai = GetComponent<CharPhysics2DEnemyAI>();
+  }
+
   override protected void EnemyUpdate() {
     print("EnemyUpdate");
   }
 
   override protected void OnHit(float damage, Collision2D col) {
-    print("OnHit");
+    health -= damage;
+    if (health <= 0) {
+      gameObject.SetActive(false);
+    }
   }
 
   override protected void OnExitView() {
-    activated = false;
+    physics.enabled = ai.enabled = activated = false;
   }
 
   override protected void OnEnterView() {
-    activated = true;
+    physics.enabled = ai.enabled = activated = true;
   }
 
   override protected void OnActivate() {

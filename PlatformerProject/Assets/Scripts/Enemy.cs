@@ -34,6 +34,7 @@ public abstract class Enemy : MonoBehaviour {
   public void Start() {
     cam = Camera.main;
     sr = GetComponent<SpriteRenderer>();
+    OnCreate();
     Updaterect();
     inView = GetSpawnRect().Overlaps(rect);
     if (inView) OnEnterView();
@@ -80,6 +81,8 @@ public abstract class Enemy : MonoBehaviour {
   }
 
 
+  // On creation
+  protected abstract void OnCreate();
   // On hit duh
   protected abstract void OnHit(float damage, Collision2D col);
   // When activated

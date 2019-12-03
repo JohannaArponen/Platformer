@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
+[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class CharPhysics2D : MonoBehaviour {
 
   [Tooltip("Default gravity")]
@@ -59,7 +61,7 @@ public class CharPhysics2D : MonoBehaviour {
 
 
 
-  void Start() {
+  private void Start() {
     col = GetComponent<BoxCollider2D>();
     rb = GetComponent<Rigidbody2D>();
     gravity = defaultGravity;
