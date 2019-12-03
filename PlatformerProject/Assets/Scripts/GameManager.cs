@@ -31,9 +31,9 @@ public class GameManager : MonoBehaviour{
     }
 
     
-    void Update(){
+   /* void Update(){
         
-    }
+    }*/
 
     public void EnemyDestroy() {
         score++;
