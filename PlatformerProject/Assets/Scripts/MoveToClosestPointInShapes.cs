@@ -5,6 +5,12 @@ using UnityEngine;
 public class MoveToClosestPointInShapes : MonoBehaviour {
 
   [Tooltip("Calculate based on this transform instead of this.transform")]
+  [Header("")]
+  [Header("Control + Shift: Create lines without snapping")]
+  [Header("Control: Delete lines")]
+  [Header("Shift: Create new lines")]
+  [Header("Alt: Disable moving overlapping points when dragging")]
+  [Header("Drag position handles to modify lines")]
   public Transform target;
   public Vector3 offset = Vector3.zero;
   public bool smoothDamp = true;
@@ -65,8 +71,6 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
         pos2 = point;
         var dir = pos1 - pos2;
         var res = ClosestPointOnLine(pos1, pos2, pos);
-        Gizmos.color = new Color(0.85f, 0.85f, 0.85f, 1);
-        Gizmos.DrawSphere(res.xyo(), 0.1f);
         if (minVectorLength > (res - pos.xy()).sqrMagnitude) {
           minVector = res - pos.xy();
           minVectorLength = minVector.sqrMagnitude;
