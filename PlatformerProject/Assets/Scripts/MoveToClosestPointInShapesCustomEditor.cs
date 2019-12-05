@@ -16,7 +16,6 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
   private bool altLeft = false;
   private bool moving = false;
   private bool blockCreate = false;
-  private bool blockDelete = false;
   private List<int> moveWithCurrent = new List<int>();
   private bool creatingFirst;
   private bool blockSplitting;
@@ -31,6 +30,7 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
   private Vector3 actualNewB;
   private bool forceStart = false;
   private Vector3 forceStartPos;
+  private int currentUndo;
 
   private MoveToClosestPointInShapes t { get => ((MoveToClosestPointInShapes)target); }
 
@@ -69,6 +69,7 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
 
             Handles.color = Handles.yAxisColor;
             Handles.DrawLine(newA, newB);
+            Handles.Button(newA, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap);
             actualNewA = newA;
             actualNewB = newB;
           }
@@ -78,7 +79,10 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
         }
         break;
       case EventType.MouseDown:
-        if (Event.current.button == 0) mouse = true;
+        if (Event.current.button == 0) {
+          currentUndo = Undo.GetCurrentGroup();
+          mouse = true;
+        }
         break;
       case EventType.MouseUp:
         if (Event.current.button == 0) mouse = false;
@@ -109,7 +113,11 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
     if (!mouse) {
       blockSplitting = false;
       splitting = false;
-      if (moving) Clean();
+      if (moving) {
+        Clean();
+        Dirty();
+        Undo.RegisterCompleteObjectUndo(t, "Modify line");
+      }
       moving = false;
     } else if (blockSplitting) { // Allow moving split position
       t.lines[splitIndex] += newB - oldMousePos;
@@ -121,7 +129,7 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
         creatingFirstPos = newB;
       }
       newA = creatingFirstPos;
-      Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
+      Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap);
       if (mouse && !blockCreate) {
         Undo.RecordObject(t, "Create new line");
         blockCreate = true;
@@ -132,35 +140,37 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
         Clean();
         Dirty();
       }
-    } else if (!blockSplitting && !moving && shift && !forceStart && t.snapDistance > 0) {
-      var minVector = Vector2.zero;
-      var minVectorLength = float.PositiveInfinity;
+    } else {
+      if (!blockSplitting && !moving && shift && !forceStart && t.snapDistance > 0) {
+        var minVector = Vector2.zero;
+        var minVectorLength = float.PositiveInfinity;
 
-      for (int i = 1; i < t.lines.Count; i += 2) {
-        var line = (start: t.lines[i - 1], end: t.lines[i]);
-        var dir = line.start - line.end;
-        var res = MoveToClosestPointInShapes.ClosestPointOnLine(line.start, line.end, newB);
-        if (minVectorLength > (res - newB.xy()).sqrMagnitude) {
-          minVector = res - newB.xy();
-          minVectorLength = minVector.sqrMagnitude;
-          splitIndex = i;
+        for (int i = 1; i < t.lines.Count; i += 2) {
+          var line = (start: t.lines[i - 1], end: t.lines[i]);
+          var dir = line.start - line.end;
+          var res = MoveToClosestPointInShapes.ClosestPointOnLine(line.start, line.end, newB);
+          if (minVectorLength > (res - newB.xy()).sqrMagnitude) {
+            minVector = res - newB.xy();
+            minVectorLength = minVector.sqrMagnitude;
+            splitIndex = i;
+          }
         }
-      }
-      if (minVectorLength <= t.snapDistance) {
-        splitting = true;
-        splitPos = newB.AddXY(minVector);
-        Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
-        if (mouse) {
-          Undo.RecordObject(t, "Splitted line");
-          blockSplitting = true;
-          var splitStart = t.lines[splitIndex - 1];
-          var splitEnd = t.lines[splitIndex];
-          t.lines[splitIndex - 1] = splitStart;
-          t.lines[splitIndex] = splitPos;
-          t.lines.InsertRange(splitIndex + 1, new Vector3[] { splitPos, splitEnd });
-          Dirty();
+        if (minVectorLength <= t.snapDistance) {
+          splitting = true;
+          splitPos = newB.AddXY(minVector);
+          Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
+          if (mouse) {
+            Undo.RecordObject(t, "Splitted line");
+            blockSplitting = true;
+            var splitStart = t.lines[splitIndex - 1];
+            var splitEnd = t.lines[splitIndex];
+            t.lines[splitIndex - 1] = splitStart;
+            t.lines[splitIndex] = splitPos;
+            t.lines.InsertRange(splitIndex + 1, new Vector3[] { splitPos, splitEnd });
+            Dirty();
+          }
+          return;
         }
-        return;
       }
     }
     if (blockSplitting) return;
@@ -172,11 +182,13 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
 
       EditorGUI.BeginChangeCheck();
       if (control) {
-        var center = line.start + (line.end - line.start) / 2;
-        if (Handles.Button(center, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap)) {
-          Undo.RecordObject(t, "Delete line");
-          t.lines.RemoveRange(i - 1, 2);
-          Dirty();
+        if (!shift) {
+          var center = line.start + (line.end - line.start) / 2;
+          if (Handles.Button(center, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap)) {
+            Undo.RecordObject(t, "Delete line");
+            t.lines.RemoveRange(i - 1, 2);
+            Dirty();
+          }
         }
       } else {
         if (shift && !moving) {
@@ -193,21 +205,13 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
           }
         } else {
           forceStart = false;
-          Vector3 newStart = Handles.PositionHandle(line.start, Quaternion.identity);
-          Vector3 newEnd = Handles.PositionHandle(line.end, Quaternion.identity);
+          Vector3 newStart = Handles.FreeMoveHandle(line.start, Quaternion.identity, 0.5f, Vector3.zero, Handles.RectangleHandleCap);
+          Vector3 newEnd = Handles.FreeMoveHandle(line.end, Quaternion.identity, 0.5f, Vector3.zero, Handles.RectangleHandleCap);
           if (EditorGUI.EndChangeCheck()) {
             bool startMoved = newStart != line.start;
             Undo.RecordObject(t, "Modify line");
             if (!moving) {
-              moveWithCurrent.Clear();
-              for (int j = 0; j < t.lines.Count; j++) {
-                if (j == i || j == i - 1) continue;
-                if (newStart == line.start) {
-                  if (t.lines[j] == line.end)
-                    moveWithCurrent.Add(j);
-                } else if (t.lines[j] == line.start)
-                  moveWithCurrent.Add(j);
-              }
+              moveWithCurrent = FindOverlapping(newStart == line.start ? line.end : line.start, i, i - 1);
             }
             moving = true;
 
@@ -247,7 +251,6 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
             }
             t.lines[i - 1] = newStart;
             t.lines[i] = newEnd;
-            Dirty();
           }
           continue;
         }
@@ -290,6 +293,14 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
         }
       }
     }
+  }
+
+  List<int> FindOverlapping(Vector3 pos, params int[] ignores) {
+    var res = new List<int>();
+    for (int i = 0; i < t.lines.Count; i++) {
+      if (t.lines[i] == pos && !ignores.Includes(i)) res.Add(i);
+    }
+    return res;
   }
 
   void Dirty() {

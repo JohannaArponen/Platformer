@@ -35,6 +35,9 @@ public class CharPhysics2D : MonoBehaviour {
   public float collisionTestLength = 0.01f;
   [Tooltip("Smaller values increase the amount of sliding on steep angles")]
   public float steepVelocityProjectPower = 2;
+  [Range(0, 5)]
+  [Tooltip("Raycast show duration. Set to 0 for no debug rays")]
+  public float rayDuration = 0;
 
   [Tooltip("Current gravity")]
   public float gravity = 10f;
@@ -74,6 +77,8 @@ public class CharPhysics2D : MonoBehaviour {
     Physics2D.SyncTransforms();
     var results = new RaycastHit2D[1];
     var res = rb.Cast(dir, layers, results, distance);
+    if (rayDuration > 0)
+      Debug.DrawRay(transform.position, dir, Color.green, rayDuration);
     transform.position = prevPos;
     Physics2D.SyncTransforms();
     return res > 0 ? results[0] : new RaycastHit2D();
@@ -241,7 +246,8 @@ public class CharPhysics2D : MonoBehaviour {
           var downContact = GetFirstHit(transform.position, Vector2.down, math.abs(endVel.x) * math.tan(maxSlopeAngle * Mathf.Deg2Rad) + maxHeightStep);
 
           if (downContact && (math.abs(downContact.normal.x) < 0.00001f || (endVel.x < 0 == downContact.normal.x < 0)) && Vector2.Angle(Vector2.up, downContact.normal) <= maxSlopeAngle) {
-            Debug.DrawRay(downContact.point, downContact.normal, Color.green);
+            if (rayDuration > 0)
+              Debug.DrawRay(downContact.point, downContact.normal, Color.yellow, rayDuration);
             var newPos = downContact.centroid;
             newPos.y += contactOffset;
             if (!GetFirstHit(newPos, Vector2.one.xo(), 0))
