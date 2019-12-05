@@ -4,13 +4,20 @@ using UnityEngine;
 
 public class MoveToClosestPointInShapes : MonoBehaviour {
 
-  [Tooltip("Calculate based on this transform instead of this.transform")]
   [Header("")]
-  [Header("Control + Shift: Create lines without snapping")]
-  [Header("Control: Delete lines")]
-  [Header("Shift: Create new lines")]
-  [Header("Alt: Disable moving overlapping points when dragging")]
+  [Header("Alt: Drag overlapping points or snap to other points")]
+  [Header("Control + Shift: Create lines without starting from nearest vertex")]
+  [Header("Shift: Create new lines or split lines")]
   [Header("Drag position handles to modify lines")]
+  [Tooltip("Vertices that excactly at the same position are moved together")]
+  public bool moveOverlappingVertices = true;
+  [Tooltip("When moving vertices they try to snap to nearby vertices")]
+  public float snapDistance = 0.1f;
+  [Tooltip("Remvoes identical lines duh")]
+  public bool removeIdentical = true;
+  [Tooltip("Removes lines with identical start and end positions")]
+  public bool removeZeroLength = true;
+  [Tooltip("Calculate based on this transform instead of this.transform")]
   public Transform target;
   public Vector3 offset = Vector3.zero;
   public bool smoothDamp = true;
@@ -34,21 +41,13 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
 
     var pos = target.position;
 
-    var flip = true;
-    Vector3 pos1 = Vector3.zero; // Value only for initialization
-    Vector3 pos2;
-    foreach (var point in lines) {
-      flip = !flip;
-      if (flip) {
-        pos2 = point;
-        var dir = pos1 - pos2;
-        var res = ClosestPointOnLine(pos1, pos2, pos);
-        if (minVectorLength > (res - pos.xy()).sqrMagnitude) {
-          minVector = res - pos.xy();
-          minVectorLength = minVector.sqrMagnitude;
-        }
-      } else {
-        pos1 = point;
+    for (int i = 1; i < lines.Count; i += 2) {
+      var line = (start: lines[i - 1], end: lines[i]);
+      var dir = line.start - line.end;
+      var res = ClosestPointOnLine(line.start, line.end, pos);
+      if (minVectorLength > (res - pos.xy()).sqrMagnitude) {
+        minVector = res - pos.xy();
+        minVectorLength = minVector.sqrMagnitude;
       }
     }
 
@@ -62,21 +61,14 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
     var minVectorLength = float.PositiveInfinity;
 
     var pos = target == null ? transform.position : target.position;
-    var flip = true;
-    Vector3 pos1 = Vector3.zero; // Value only for initialization
-    Vector3 pos2;
-    foreach (var point in lines) {
-      flip = !flip;
-      if (flip) {
-        pos2 = point;
-        var dir = pos1 - pos2;
-        var res = ClosestPointOnLine(pos1, pos2, pos);
-        if (minVectorLength > (res - pos.xy()).sqrMagnitude) {
-          minVector = res - pos.xy();
-          minVectorLength = minVector.sqrMagnitude;
-        }
-      } else {
-        pos1 = point;
+
+    for (int i = 1; i < lines.Count; i += 2) {
+      var line = (start: lines[i - 1], end: lines[i]);
+      var dir = line.start - line.end;
+      var res = ClosestPointOnLine(line.start, line.end, pos);
+      if (minVectorLength > (res - pos.xy()).sqrMagnitude) {
+        minVector = res - pos.xy();
+        minVectorLength = minVector.sqrMagnitude;
       }
     }
     Gizmos.color = Color.green;

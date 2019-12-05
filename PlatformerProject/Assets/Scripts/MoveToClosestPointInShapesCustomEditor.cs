@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -13,12 +14,19 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
   private bool alt { get => altRight || altLeft; }
   private bool altRight = false;
   private bool altLeft = false;
+  private bool moving = false;
   private bool blockCreate = false;
   private bool blockDelete = false;
+  private List<int> moveWithCurrent = new List<int>();
   private bool creatingFirst;
+  private bool blockSplitting;
+  private bool splitting;
+  private Vector3 splitPos;
+  private int splitIndex;
   private Vector3 creatingFirstPos;
   private Vector3 newA;
   private Vector3 newB;
+  private Vector3 oldMousePos;
   private Vector3 actualNewA;
   private Vector3 actualNewB;
   private bool forceStart = false;
@@ -40,11 +48,30 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
         } else {
           Handles.DrawLines(t.lines.ToArray());
         }
-        if (shift) {
-          Handles.color = Handles.yAxisColor;
-          Handles.DrawLine(newA, newB);
-          actualNewA = newA;
-          actualNewB = newB;
+        if (shift && !moving) {
+          if (splitting) {
+            if (!blockSplitting) {
+              Handles.color = Handles.yAxisColor;
+              Handles.DrawSolidDisc(splitPos, Vector3.forward, 0.1f);
+            }
+          } else {
+            if (t.snapDistance > 0) {
+              var minDist = float.PositiveInfinity;
+              var minPos = Vector3.zero;
+              for (int j = 0; j < t.lines.Count; j++) {
+                if (minDist > (newB - t.lines[j]).sqrMagnitude) {
+                  minDist = (newB - t.lines[j]).sqrMagnitude;
+                  minPos = t.lines[j];
+                }
+              }
+              if (minDist <= t.snapDistance) newB = minPos;
+            }
+
+            Handles.color = Handles.yAxisColor;
+            Handles.DrawLine(newA, newB);
+            actualNewA = newA;
+            actualNewB = newB;
+          }
         }
         foreach (var point in t.lines) {
           Handles.DrawSolidDisc(point, Vector3.forward, 0.1f);
@@ -76,9 +103,17 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
 
   void HandleAll() {
     newA = forceStart ? forceStartPos.xy() : Vector2.zero;
+    oldMousePos = newB;
     newB = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin.xyo();
-    if (!shift || (t.lines.Count > 0 && shift && !control)) {
-      creatingFirst = false;
+    if (!shift || (t.lines.Count > 0 && shift && !control)) creatingFirst = false;
+    if (!mouse) {
+      blockSplitting = false;
+      splitting = false;
+      if (moving) Clean();
+      moving = false;
+    } else if (blockSplitting) { // Allow moving split position
+      t.lines[splitIndex] += newB - oldMousePos;
+      t.lines[splitIndex + 1] += newB - oldMousePos;
     }
     if (shift && (t.lines.Count == 0 || control)) {
       if (!creatingFirst) {
@@ -87,87 +122,180 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
       }
       newA = creatingFirstPos;
       Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
-      if (mouse) {
-        if (!blockCreate) {
-          Undo.RecordObject(t, "Create new line");
-          blockCreate = true;
-          t.lines.Add(actualNewA);
-          t.lines.Add(actualNewB);
-          forceStart = true;
-          forceStartPos = newB;
-          if (!Application.isPlaying) {
-            EditorUtility.SetDirty(t);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-          };
+      if (mouse && !blockCreate) {
+        Undo.RecordObject(t, "Create new line");
+        blockCreate = true;
+        t.lines.Add(actualNewA);
+        t.lines.Add(actualNewB);
+        forceStart = true;
+        forceStartPos = newB;
+        Clean();
+        Dirty();
+      }
+    } else if (!blockSplitting && !moving && shift && !forceStart && t.snapDistance > 0) {
+      var minVector = Vector2.zero;
+      var minVectorLength = float.PositiveInfinity;
+
+      for (int i = 1; i < t.lines.Count; i += 2) {
+        var line = (start: t.lines[i - 1], end: t.lines[i]);
+        var dir = line.start - line.end;
+        var res = MoveToClosestPointInShapes.ClosestPointOnLine(line.start, line.end, newB);
+        if (minVectorLength > (res - newB.xy()).sqrMagnitude) {
+          minVector = res - newB.xy();
+          minVectorLength = minVector.sqrMagnitude;
+          splitIndex = i;
         }
       }
+      if (minVectorLength <= t.snapDistance) {
+        splitting = true;
+        splitPos = newB.AddXY(minVector);
+        Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
+        if (mouse) {
+          Undo.RecordObject(t, "Splitted line");
+          blockSplitting = true;
+          var splitStart = t.lines[splitIndex - 1];
+          var splitEnd = t.lines[splitIndex];
+          t.lines[splitIndex - 1] = splitStart;
+          t.lines[splitIndex] = splitPos;
+          t.lines.InsertRange(splitIndex + 1, new Vector3[] { splitPos, splitEnd });
+          Dirty();
+        }
+        return;
+      }
     }
+    if (blockSplitting) return;
+    splitting = false;
+
     var minDistance = float.PositiveInfinity;
     for (int i = 1; i < t.lines.Count; i += 2) {
-      var start = t.lines[i - 1];
-      var end = t.lines[i];
+      var line = (start: t.lines[i - 1], end: t.lines[i]);
 
       EditorGUI.BeginChangeCheck();
       if (control) {
-        var center = start + (end - start) / 2;
+        var center = line.start + (line.end - line.start) / 2;
         if (Handles.Button(center, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap)) {
+          Undo.RecordObject(t, "Delete line");
           t.lines.RemoveRange(i - 1, 2);
-          if (!Application.isPlaying) {
-            Undo.RecordObject(t, "Delete line");
-            EditorUtility.SetDirty(t);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-          };
+          Dirty();
         }
       } else {
-        if (shift) {
+        if (shift && !moving) {
           Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap); // Prevent deselect
           if (!forceStart) {
-            if (minDistance > (start - newB).xy().sqrMagnitude) {
-              newA = start;
-              minDistance = (start - newB).xy().sqrMagnitude;
+            if (minDistance > (line.start - newB).xy().sqrMagnitude) {
+              newA = line.start;
+              minDistance = (line.start - newB).xy().sqrMagnitude;
             }
-            if (minDistance > (end - newB).xy().sqrMagnitude) {
-              newA = end;
-              minDistance = (end - newB).xy().sqrMagnitude;
+            if (minDistance > (line.end - newB).xy().sqrMagnitude) {
+              newA = line.end;
+              minDistance = (line.end - newB).xy().sqrMagnitude;
             }
           }
         } else {
           forceStart = false;
-          Vector3 newStart = Handles.PositionHandle(start, Quaternion.identity);
-          Vector3 newEnd = Handles.PositionHandle(end, Quaternion.identity);
+          Vector3 newStart = Handles.PositionHandle(line.start, Quaternion.identity);
+          Vector3 newEnd = Handles.PositionHandle(line.end, Quaternion.identity);
           if (EditorGUI.EndChangeCheck()) {
+            bool startMoved = newStart != line.start;
             Undo.RecordObject(t, "Modify line");
-            t.lines[i - 1] = newStart;
-            t.lines[i] = newEnd;
-            if (!alt) {
+            if (!moving) {
+              moveWithCurrent.Clear();
               for (int j = 0; j < t.lines.Count; j++) {
-                // !!! DOESNT WORK
-                if (t.lines[j].Equals(newStart)) {
-                  t.lines[j] = newStart;
-                } else if (t.lines[j].Equals(newEnd)) {
-                  t.lines[j] = newEnd;
-                }
+                if (j == i || j == i - 1) continue;
+                if (newStart == line.start) {
+                  if (t.lines[j] == line.end)
+                    moveWithCurrent.Add(j);
+                } else if (t.lines[j] == line.start)
+                  moveWithCurrent.Add(j);
               }
             }
+            moving = true;
+
+            var minDist = float.PositiveInfinity;
+            var minPos = Vector3.zero;
+            if (t.snapDistance > 0) {
+              if (t.moveOverlappingVertices) {
+                for (int j = 0; j < t.lines.Count; j++) {
+                  if (j == i || j == i - 1 || moveWithCurrent.Contains(j)) continue;
+                  if (startMoved) {
+                    if (minDist > (newStart - t.lines[j]).sqrMagnitude) {
+                      minDist = (newStart - t.lines[j]).sqrMagnitude;
+                      minPos = t.lines[j];
+                    }
+                  } else {
+                    if (minDist > (newEnd - t.lines[j]).sqrMagnitude) {
+                      minDist = (newEnd - t.lines[j]).sqrMagnitude;
+                      minPos = t.lines[j];
+                    }
+                  }
+                }
+              }
+              if (minDist <= t.snapDistance) {
+                if (startMoved) newStart = minPos;
+                else newEnd = minPos;
+              }
+            }
+
+            if (t.moveOverlappingVertices) {
+              if (minDist <= t.snapDistance)
+                foreach (var index in moveWithCurrent)
+                  t.lines[index] = minPos;
+
+              foreach (var index in moveWithCurrent)
+                t.lines[index] = startMoved ? newStart : newEnd;
+
+            }
+            t.lines[i - 1] = newStart;
+            t.lines[i] = newEnd;
+            Dirty();
           }
+          continue;
         }
         if (mouse && shift) {
+          moving = false;
           if (!blockCreate) {
             Undo.RecordObject(t, "Create new line");
             blockCreate = true;
             t.lines.Add(actualNewA);
             t.lines.Add(actualNewB);
             forceStart = true;
-            forceStartPos = newB;
-            if (!Application.isPlaying) {
-              EditorUtility.SetDirty(t);
-              UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-            };
+            forceStartPos = actualNewB;
+            Dirty();
           }
         } else {
           blockCreate = false;
         }
       }
+    }
+  }
+
+  void Clean() {
+    if (!t.removeIdentical) return;
+    var hashList = new HashSet<(Vector3, Vector3)>();
+    for (int i = 1; i < t.lines.Count; i += 2) {
+      var line = (t.lines[i - 1], t.lines[i]);
+      if (hashList.Contains(line)) {
+        t.lines.RemoveRange(i - 1, 2);
+        i -= 2;
+        Dirty();
+      } else
+        hashList.Add(line);
+    }
+    if (t.removeZeroLength) {
+      for (int i = 1; i < t.lines.Count; i += 2) {
+        if (t.lines[i - 1] == t.lines[i]) {
+          t.lines.RemoveRange(i - 1, 2);
+          i -= 2;
+          Dirty();
+        }
+      }
+    }
+  }
+
+  void Dirty() {
+    if (!Application.isPlaying) {
+      EditorUtility.SetDirty(t);
+      UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
     }
   }
 }

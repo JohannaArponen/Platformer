@@ -27,7 +27,6 @@ public class TestEnemy : Enemy {
   }
 
   override protected void EnemyUpdate() {
-    print("EnemyUpdate");
   }
 
   override protected void OnHit(float damage, Collision2D col) {
@@ -46,11 +45,9 @@ public class TestEnemy : Enemy {
   }
 
   override protected void OnActivate() {
-    print("OnActivate");
   }
 
   override protected void OnDeactivate() {
-    print("OnDeactivate");
   }
 
 }
