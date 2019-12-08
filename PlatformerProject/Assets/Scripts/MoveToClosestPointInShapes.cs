@@ -6,7 +6,7 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
 
   [Header("")]
   [Header("Alt: Drag overlapping points or snap to other points")]
-  [Header("Control + Shift: Create lines without starting from nearest vertex")]
+  [Header("Control + Shift: Create new line starting from cursor position")]
   [Header("Shift: Create new lines or split lines")]
   [Header("Drag position handles to modify lines")]
   [Tooltip("Vertices that excactly at the same position are moved together")]

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharPhysics2D))]
-public class CharPhysics2DController : MonoBehaviour {
+[RequireComponent(typeof(Physics2DCharacter))]
+public class Physics2DCharController : MonoBehaviour {
   public float speed;
   public bool useHorizontalAxisMove = true;
   public bool axisMoveSmooth = true;
@@ -15,10 +15,10 @@ public class CharPhysics2DController : MonoBehaviour {
   public bool useVerticalAxisCrouch = true;
   public KeyCode crouchKey;
 
-  private CharPhysics2D physics;
+  private Physics2DCharacter physics;
 
   void Start() {
-    physics = GetComponent<CharPhysics2D>();
+    physics = GetComponent<Physics2DCharacter>();
   }
 
   // Update is called once per frame

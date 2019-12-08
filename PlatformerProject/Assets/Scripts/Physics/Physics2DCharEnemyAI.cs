@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharPhysics2D))]
 [RequireComponent(typeof(Enemy))]
-public class CharPhysics2DEnemyAI : MonoBehaviour {
+[RequireComponent(typeof(Physics2DCharacter))]
+public class Physics2DCharEnemyAI : MonoBehaviour {
   public float speed;
   public float jumpStrength;
 
-  private CharPhysics2D physics;
   private Enemy enemy;
+  private Physics2DCharacter physics;
 
   public bool wannaMoveRight = false;
   public bool wannaMoveLeft = true;
@@ -17,7 +17,7 @@ public class CharPhysics2DEnemyAI : MonoBehaviour {
 
 
   void Start() {
-    physics = GetComponent<CharPhysics2D>();
+    physics = GetComponent<Physics2DCharacter>();
     enemy = GetComponent<Enemy>();
   }
 
@@ -25,16 +25,14 @@ public class CharPhysics2DEnemyAI : MonoBehaviour {
   void Update() {
     if (!physics.onSlope) {
 
-      if (physics.onRight && Vector2.Angle(Vector2.up, physics.onRight.normal) > physics.maxSlopeAngle) {
-        wannaMoveRight = false;
-        wannaMoveLeft = true;
-      } else if (physics.onLeft && Vector2.Angle(Vector2.up, physics.onLeft.normal) > physics.maxSlopeAngle) {
-        wannaMoveRight = true;
-        wannaMoveLeft = false;
+      if (physics.stationary) {
+        // And then you switch
+        wannaMoveRight = !wannaMoveRight;
+        wannaMoveLeft = !wannaMoveRight;
       }
+
       // Move
       float move = 0;
-
       if (wannaMoveLeft)
         move -= speed;
       else if (wannaMoveRight)

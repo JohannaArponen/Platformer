@@ -127,6 +127,7 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
       if (!creatingFirst) {
         creatingFirst = true;
         creatingFirstPos = newB;
+
       }
       newA = creatingFirstPos;
       Handles.Button(newB, Quaternion.identity, 0.5f, 0.5f, Handles.RectangleHandleCap);
@@ -295,10 +296,28 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
     }
   }
 
-  List<int> FindOverlapping(Vector3 pos, params int[] ignores) {
+  bool FindNearest(Vector3 pos, out Vector3 nearest, params int[] ignoreIndexes) {
+    bool found = false;
+
+    var minDist = float.PositiveInfinity;
+    var minPos = Vector3.zero;
+    for (int i = 0; i < t.lines.Count; i++) {
+      if (!ignoreIndexes.Includes(i)) continue;
+      var dist = (pos - t.lines[i]).sqrMagnitude;
+      if (minDist > dist) {
+        found = true;
+        minDist = dist;
+        minPos = t.lines[i];
+      }
+    }
+    nearest = minPos;
+    return found;
+  }
+
+  List<int> FindOverlapping(Vector3 pos, params int[] ignoreIndexes) {
     var res = new List<int>();
     for (int i = 0; i < t.lines.Count; i++) {
-      if (t.lines[i] == pos && !ignores.Includes(i)) res.Add(i);
+      if (t.lines[i] == pos && !ignoreIndexes.Includes(i)) res.Add(i);
     }
     return res;
   }

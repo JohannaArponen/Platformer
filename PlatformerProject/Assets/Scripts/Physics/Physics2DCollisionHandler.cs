@@ -6,8 +6,8 @@ using UnityEngine;
 /// This component allows moving colliders to more accurately collide with CharPhysics2D objects
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-[RequireComponent(typeof(CharPhysics2D))]
-public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
+[RequireComponent(typeof(Physics2DCharacter))]
+public class Physics2DCollisionHandler : MonoBehaviour {
 
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
@@ -67,7 +67,7 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
   }
 
   bool CheckResult(RaycastHit2D hit) {
-    if (hit.collider.GetComponent<CharPhysics2D>()) {
+    if (hit.collider.GetComponent<Physics2DCharacter>()) {
       var move = transform.position - prevPos;
       var hitPos = prevPos + move * (hit.fraction);
       MyUtil.DrawCross(hitPos, 0.1f, Color.green, 1);
@@ -82,7 +82,7 @@ public class CharPhysics2DMovementSynchronizer : MonoBehaviour {
   }
 
   bool CheckResult(Collider2D collider) {
-    if (collider.GetComponent<CharPhysics2D>()) {
+    if (collider.GetComponent<Physics2DCharacter>()) {
       // var dist = collider
       // Check collision point
       // Move based on that etc etc
