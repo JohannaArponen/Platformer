@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharPhysics2DEnemyAI))]
+[RequireComponent(typeof(Physics2DCharEnemyAI))]
 public class TestEnemy : Enemy {
 
 
@@ -18,16 +18,15 @@ public class TestEnemy : Enemy {
   private float _invulnerabilityDuration = 1;
   private float _activeDistanceFromView = 2;
 
-  private CharPhysics2D physics;
-  private CharPhysics2DEnemyAI ai;
+  private Physics2DCharacter physics;
+  private Physics2DCharEnemyAI ai;
 
   override protected void OnCreate() {
-    physics = GetComponent<CharPhysics2D>();
-    ai = GetComponent<CharPhysics2DEnemyAI>();
+    physics = GetComponent<Physics2DCharacter>();
+    ai = GetComponent<Physics2DCharEnemyAI>();
   }
 
   override protected void EnemyUpdate() {
-    print("EnemyUpdate");
   }
 
   override protected void OnHit(float damage, Collision2D col) {
@@ -46,11 +45,9 @@ public class TestEnemy : Enemy {
   }
 
   override protected void OnActivate() {
-    print("OnActivate");
   }
 
   override protected void OnDeactivate() {
-    print("OnDeactivate");
   }
 
 }
