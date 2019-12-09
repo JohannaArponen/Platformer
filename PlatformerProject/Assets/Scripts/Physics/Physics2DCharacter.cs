@@ -171,7 +171,6 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
   void Physics() {
-    rb.useFullKinematicContacts = true;
     float multiplier = math.max(0f, 1f - drag * Time.deltaTime);
     velocity *= multiplier;
     velocity.y -= gravity * Time.deltaTime;
@@ -182,29 +181,27 @@ public class Physics2DCharacter : MonoBehaviour {
     }
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
-    var forceSteps = false;
 
     for (int i = 0; i < maxPhysicsIters; i++) {
       var hit = Cast(transform.position, endVel);
+
       if (hit && debug.hitNormal)
         Debug.DrawRay(hit.point, hit.normal, debug.hitNormal.color, 0);
       if (hit) {
         // Height steps, stairs etc.
         var contactAngle = Vector2.Angle(Vector2.up, hit.normal);
         bool isSteep = contactAngle > maxAngle;
-        if (forceSteps || ((onGround || airHeightStep) && isSteep) && Vector2.Angle(Vector2.up, endVel) < 135) {
-          forceSteps = false;
-          var heighStep = maxHeightStep * 2;
+        if ((onGround || airHeightStep) && isSteep && Vector2.Angle(Vector2.up, endVel) < 135) {
           for (int j = 0; j < maxHeightVerticalSteps; j++) {
-            heighStep /= 2;
+            var heighStep = maxHeightStep / (j + 1);
             var pos = transform.position.xy().AddY(heighStep);
 
             bool breakOuter = false;
             RaycastHit2D horHit;
-            float horStep = endVel.x * 2;
+            float horStep = 0;
             for (int k = 0; k < maxHeightHorizontalSteps; k++) {
-              horStep /= 2;
-              horHit = Cast(pos, new Vector2(horStep, 0));
+              horStep = endVel.x / (k + 1);
+              horHit = Cast(pos, new Vector2((endVel.x >= 0 ? 1 : -1) * horStep, 0));
               if (!horHit)
                 break;
               else if (k == maxHeightHorizontalSteps - 1) {
@@ -220,7 +217,7 @@ public class Physics2DCharacter : MonoBehaviour {
               var collisionPos = CollisionPos(downHit, downPos, dir);
               if (!Collides(collisionPos))
                 transform.position = collisionPos;
-              return;
+              // return;
             }
           }
         }
@@ -239,11 +236,8 @@ public class Physics2DCharacter : MonoBehaviour {
           velocity *= math.abs(hit.normal) * -1 + 1;
 
 
-
         if (!Collides(colPos) || Input.GetKey(KeyCode.P))
           transform.position = colPos;
-        else if (contactAngle % 90 < 2 || contactAngle % 90 > 88) forceSteps = true; // fix physics aids
-
 
         // Project velocity along normal of collision
         if (!onGround || contactAngle >= 90 || contactAngle < maxAngle || endVel.x == 0 || hit.normal.x >= 0 == endVel.x >= 0) // Fixes going towards slopes causing jitter
