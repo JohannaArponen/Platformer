@@ -67,17 +67,26 @@ public class Physics2DCharController : MonoBehaviour {
     }
   }
 
-  /// <summary> Returns the direction the player is inputting. Both values range from -1 and 1 </summary>
-  public Vector2 GetUserDirection() {
+  /// <summary> Returns the direction the player is inputting. Both values range from -1 and 1. Smoothing value is only used if that input type is enabled </summary>
+  public Vector2 GetUserDirection(bool smoothing = false) {
     var dir = Vector2.zero;
-    if (useVerticalAxisCrouch ? Input.GetAxisRaw("Vertical") < 0 : Input.GetKey(crouchKey))
+
+    if (useVerticalAxisCrouch) {
+      var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
+      if (axis < 0)
+        dir.y += axis;
+    } else if (useVerticalAxisCrouch ? (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")) < 0 : Input.GetKey(crouchKey))
       dir.y -= 1;
-    if (useVerticalAxisJump ? Input.GetAxisRaw("Vertical") > 0 : Input.GetKey(jumpKey))
-      dir.y += 1;
+
+    if (useVerticalAxisJump) {
+      var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
+      if (axis > 0)
+        dir.y += axis;
+    } else if (useVerticalAxisJump ? (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")) > 0 : Input.GetKey(jumpKey))
+      dir.y -= 1;
 
     if (useHorizontalAxisMove) {
-      var axis = Input.GetAxisRaw("Horizontal");
-      dir.x = axis == 0 ? 0 : Mathf.Sign(axis);
+      dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
     } else {
       if (Input.GetKey(leftKey))
         dir.x -= 1;

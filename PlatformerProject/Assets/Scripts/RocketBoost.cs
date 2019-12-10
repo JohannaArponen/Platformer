@@ -12,24 +12,33 @@ public class RocketBoost : MonoBehaviour {
   public float startSpeed = 10;
   public float endSpeed = 100;
   public AnimationCurve speedCurve;
+  [Tooltip("Allow ending boost by pressing the hotkey again")]
+  public bool allowPrematureEnd = false;
+  [Tooltip("Allow attacking when holding button (after first attack)")]
+  public bool allowAttack = false;
+  [Tooltip("Allow the player to input a direction for this long after releasing the hotkey")]
+  public float waitDuration = 0.1f;
+  [Tooltip("Use previously inputted directions if none is inputted when releasing the hotkey. Each axis is invidually recorded for this duration")]
+  public float saveDirDuration = 0.1f;
+  [Tooltip("Allow the player to input a new direction for this long after initiating a boost")]
+  public float allowDirectionChangeDuration = 0.1f;
+  [Tooltip("Use smoothed axises instead of raw")]
+  public bool dirChangeSmoothing = false;
+
   [Tooltip("Weapon controls to use for boost. Defaults to the one returned by GetComponentInChildren")]
   public Weapon weapon;
   [Tooltip("Controller is used to determine direction of movement. Defaults to the one returned by GetComponentInChildren")]
   public Physics2DCharController ctrlr;
   [Tooltip("Optional particle system to use when boosting")]
   public ParticleSystem particles;
-  // [Tooltip("Optional sound to play when starting boost")]
-  // public AudioSource sound;
-  [Tooltip("Enable to use Default Direction when player is not pressing any direction")]
-  public bool useDefaultDirection = false;
-  [Tooltip("Default direction to use when player is not pressing any direction")]
-  public Vector2 defaultDirection = Vector2.right;
-  [Tooltip("Disable attacking when holding button (after first attack)")]
-  public bool disallowAttack = false;
 
   private float boostStartTime;
+  private float waitStartTime;
   private float channeledTime;
   private bool boosting = false;
+  private bool waiting = false;
+  private (float x, float y) saveDirTime = (0f, 0f);
+  private Vector2 saveDir;
   private Physics2DCharacter charPhysics;
   private Physics2DBouncyMove bouncy;
 
@@ -47,9 +56,16 @@ public class RocketBoost : MonoBehaviour {
   // Update is called once per frame
   void Update() {
     if (boosting) {
-      if (Time.time >= boostStartTime + duration) {
+      if ((allowPrematureEnd && Input.GetKeyDown(weapon.key)) || Time.time >= boostStartTime + duration) {
         EndBoost();
         return;
+      }
+      // Allow changing direction for a duration
+      if (Time.time < boostStartTime + allowDirectionChangeDuration) {
+        print("asd");
+        var dir = ctrlr.GetUserDirection(true);
+        if (!dir.Equals(Vector2.zero))
+          bouncy.velocity = bouncy.velocity.SetDir(dir);
       }
       var speed = startSpeed + speedCurve.Evaluate((Time.time - boostStartTime) / duration) * (endSpeed - startSpeed);
       bouncy.velocity = bouncy.velocity.SetLenSafer(speed);
@@ -60,12 +76,13 @@ public class RocketBoost : MonoBehaviour {
         channeledTime += Time.deltaTime;
       } else {
         EnableAttack(true);
-        if (Input.GetKeyUp(weapon.key) && channeledTime >= channelTime)
+        if (Time.time < waitStartTime + waitDuration || (Input.GetKeyUp(weapon.key) && channeledTime >= channelTime))
           StartBoost();
         else
           channeledTime = 0;
       }
     }
+    SaveDir();
   }
 
   void StartBoost() {
@@ -73,9 +90,11 @@ public class RocketBoost : MonoBehaviour {
 
     var dir = ctrlr.GetUserDirection();
     if (dir.Equals(Vector2.zero)) {
-      if (useDefaultDirection) {
-        dir = defaultDirection;
-      } else {
+      // Allow using previous inputs when zero was given
+      if (Time.time < saveDirTime.x + saveDirDuration) dir.x = saveDir.x;
+      if (Time.time < saveDirTime.y + saveDirDuration) dir.y = saveDir.y;
+      if (dir.Equals(Vector2.zero)) {
+        waitStartTime = Time.time;
         EnableAttack(true);
         return;
       }
@@ -86,7 +105,7 @@ public class RocketBoost : MonoBehaviour {
     bouncy.enabled = true;
     charPhysics.enabled = false;
     if (particles != null) particles.Play();
-    bouncy.velocity = dir.SetLen(endSpeed);
+    bouncy.velocity = dir.SetLen(startSpeed);
     EnableAttack(false);
   }
 
@@ -101,7 +120,19 @@ public class RocketBoost : MonoBehaviour {
     EnableAttack(true);
   }
 
+  void SaveDir() {
+    var dir = ctrlr.GetUserDirection();
+    if (dir.x != 0) {
+      saveDirTime.x = Time.time;
+      saveDir.x = dir.x;
+    }
+    if (dir.y != 0) {
+      saveDirTime.y = Time.time;
+      saveDir.y = dir.y;
+    }
+  }
+
   void EnableAttack(bool enable = true) {
-    if (disallowAttack) weapon.disallowAttack = !enable;
+    if (!allowAttack) weapon.disallowAttack = !enable;
   }
 }
