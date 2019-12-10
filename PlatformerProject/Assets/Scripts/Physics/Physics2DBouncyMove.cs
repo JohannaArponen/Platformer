@@ -17,6 +17,10 @@ public class Physics2DBouncyMove : MonoBehaviour {
   [Range(0, 90)]
   [Tooltip("Maximum collision angle for reflection. Bigger collision angles stop the object")]
   public float maxAngle;
+  [Tooltip("Maximum allowed iterations. This many collisions per frame can be handled. Usually only one iteration is done but in corners 2 might be preferred. At high speeds more iterations may be desirable")]
+  public int maxIterations = 5;
+  [Tooltip("A new iteration is not done if the velocity vector has lower SQUARED length")]
+  public float minIterationVelocity = 0.01f;
   [Tooltip("Avoid getting stuck inside colliders by offsetting collision positions")]
   public float contactOffset = 0.003771f;
 
@@ -36,19 +40,20 @@ public class Physics2DBouncyMove : MonoBehaviour {
     if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     var endVel = velocity * Time.deltaTime;
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < maxIterations; i++) {
       var hit = cast.Cast(transform.position, endVel);
       if (hit) {
         var collisionPos = CollisionPos(hit, transform.position, endVel);
         cast.TryMoveTo(collisionPos);
         velocity = Vector2.Reflect(velocity, hit.normal);
         endVel *= 1 - hit.fraction;
-        if (math.lengthsq(endVel) < 0.001f) {
-          break;
+        endVel = Vector2.Reflect(endVel, hit.normal);
+        if (math.lengthsq(endVel) < minIterationVelocity) {
+          return;
         }
       } else {
-        cast.TryMoveTo(transform.position.AddXY(endVel));
-        break;
+        transform.position = transform.position.AddXY(endVel);
+        return;
       }
     }
   }

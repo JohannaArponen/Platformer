@@ -23,6 +23,13 @@ public class Physics2DCastUtil {
     transform.position = pos;
     return true;
   }
+  public bool TryMoveTo(Vector2 pos, out RaycastHit2D hit) {
+    hit = Cast(pos, Vector2.zero);
+    if (hit)
+      return false;
+    transform.position = pos;
+    return true;
+  }
 
   public RaycastHit2D Cast(Vector2 start, Vector2 dir) {
     Vector2 normalized = dir.x == 0 && dir.y == 0 ? Vector2.right : dir.normalized;

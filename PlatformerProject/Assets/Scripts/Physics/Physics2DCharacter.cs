@@ -51,6 +51,10 @@ public class Physics2DCharacter : MonoBehaviour {
   [Tooltip("Velocity which is not affected by gravity or drag")]
   public float2 debugVelocity;
 
+  [HideInInspector]
+  /// <summary> Block the next physics update done by this component </summary>
+  public bool ignoreNextPhysicsUpdate = false;
+
   [HideInInspector] public RaycastHit2D onGround, onCeiling, onRight, onLeft;
   [HideInInspector] public bool onSlopeRight, onSlopeLeft, onSlope;
   [HideInInspector] public bool stationary;
@@ -58,6 +62,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
   public DebugOptions debug;
 
+  private Vector3 finalPos;
   private bool validPrevcollider = false;
   private TransformData colPrevTransform;
 
@@ -73,6 +78,7 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
 
+
   void LateUpdate() {
     if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     List<bool> preDisabled = new List<bool>();
@@ -85,7 +91,8 @@ public class Physics2DCharacter : MonoBehaviour {
       }
     }
 
-    if (moveWithGround && validPrevcollider && onGround) MoveWithGround();
+    var movedWithGround = false;
+    if (moveWithGround && validPrevcollider && onGround) movedWithGround = MoveWithGround();
     var postMovePos = transform.position;
     if (Input.GetKeyDown(KeyCode.R)) transform.position = Vector3.zero;
 
@@ -95,12 +102,14 @@ public class Physics2DCharacter : MonoBehaviour {
       transform.position = prevPos;
     } else Physics();
 
+    ignoreNextPhysicsUpdate = false;
+
+    stationary = movedWithGround ? (postMovePos == transform.position) : (finalPos == transform.position);
+
     onGround = cast.Cast(transform.position, Vector2.down * dirCollisionTestLength);
     onCeiling = cast.Cast(transform.position, Vector2.up * dirCollisionTestLength);
     onRight = cast.Cast(transform.position, Vector2.right * dirCollisionTestLength);
     onLeft = cast.Cast(transform.position, Vector2.left * dirCollisionTestLength);
-
-    stationary = postMovePos == transform.position;
 
     if (onGround) {
       slopeAngle = Vector2.Angle(Vector2.up, onGround.normal);
@@ -111,6 +120,7 @@ public class Physics2DCharacter : MonoBehaviour {
       if (moveWithGround && !onSlope) {
         colPrevTransform = onGround.collider.gameObject.transform.Save();
         validPrevcollider = true;
+        velocity = 0;
       }
     } else {
       validPrevcollider = false;
@@ -128,12 +138,13 @@ public class Physics2DCharacter : MonoBehaviour {
         }
       }
     }
+    finalPos = transform.position;
   }
 
 
-  void MoveWithGround() {
+  bool MoveWithGround() {
     var colGo = onGround.collider.gameObject;
-    if (colGo.isStatic) return; // Moving or deactivating static things breaks things
+    if (colGo.isStatic) return false; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
     var dir = (colGo.transform.position - colPrevTransform.position).xy();
     var hit = cast.Cast(transform.position, dir);
@@ -149,6 +160,7 @@ public class Physics2DCharacter : MonoBehaviour {
     }
 
     colGo.SetActive(true);
+    return true;
   }
 
   public Vector2 CollisionPos(RaycastHit2D hit, Vector2 origin, Vector2 dir) {
@@ -157,6 +169,7 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
   void Physics() {
+    if (ignoreNextPhysicsUpdate) return;
     rb.useFullKinematicContacts = true;
     float multiplier = math.max(0f, 1f - drag * Time.deltaTime);
     velocity *= multiplier;

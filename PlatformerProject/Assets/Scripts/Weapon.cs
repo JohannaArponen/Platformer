@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class Weapon : MonoBehaviour {
 
-  public KeyCode attack = KeyCode.X;
+  public KeyCode key = KeyCode.X;
   public float damage = 1;
   public float startAngle = 45;
   public float endAngle = 135;
@@ -19,6 +19,9 @@ public class Weapon : MonoBehaviour {
   public Collider2D col;
   [Tooltip("By default the component on this gameObject is used")]
   public SpriteRenderer sr;
+
+  [HideInInspector]
+  public bool disallowAttack;
 
   private Transform parent;
   private float attackStart = 0;
@@ -52,7 +55,7 @@ public class Weapon : MonoBehaviour {
         parent.localRotation = Quaternion.AngleAxis(endAngle, Vector3.forward);
         if (hide) Hide();
       }
-    } else if (attackStart + duration + cooldown < Time.time && Input.GetKey(attack)) {
+    } else if (!disallowAttack && attackStart + duration + cooldown < Time.time && Input.GetKey(key)) {
       attackStart = Time.time;
       attacking = true;
       parent.localRotation = Quaternion.AngleAxis(startAngle, Vector3.forward);
