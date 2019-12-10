@@ -22,10 +22,8 @@ public class Physics2DCharacter : MonoBehaviour {
   public bool moveWithGround = true;
   [Tooltip("Ignores collides belonging to children by disabling and enabling them when collision checks are done")]
   public bool ignoreChildColliders = true;
-  [Tooltip("Maximum amount of raycast done to check for walkable obstacles (height). Each iteration the value is halved")]
-  public int maxHeightVerticalSteps = 1;
-  [Tooltip("Maximum amount of raycast done to check for walkable obstacles (distance). Each iteration the value is halved")]
-  public int maxHeightHorizontalSteps = 1;
+  [Tooltip("Maximum amount of iterations done to check for walkable obstacles (horizontal, vertical). Each iteration the value is halved")]
+  public float2 maxHeightSteps = 1;
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
   [Tooltip("Maximum physics box raycasts. When a raycast collides, a new raycast is done along its vector")]
@@ -36,6 +34,11 @@ public class Physics2DCharacter : MonoBehaviour {
   public float dirCollisionTestLength = 0.01f;
   [Tooltip("Smaller values increase the amount of sliding on steep angles")]
   public float steepVelocityProjectPower = 2;
+  [Range(0, 45f)]
+  [Tooltip("Sometimes go gets stuck on things because the physics engine gives us a wrong normal value. If we failed to move and the normal angle is at most this far away from any axis, move along the normal by the value below")]
+  public float nearAxisAngleOffsetRange = 2;
+  [Tooltip("Sometimes go gets stuck on things because the physics engine gives us a wrong normal value. If we failed to move and the normal angle is at most this")]
+  public float nearAxisAngleOffset = 0.1f;
 
   [Tooltip("Current gravity")]
   public float gravity = 10f;
@@ -53,12 +56,12 @@ public class Physics2DCharacter : MonoBehaviour {
   [HideInInspector] public bool stationary;
   [HideInInspector] public float slopeAngle;
 
-  [SerializeField]
-  private DebugOptions debug;
+  public DebugOptions debug;
 
   private bool validPrevcollider = false;
   private TransformData colPrevTransform;
 
+  private Physics2DCastUtil cast;
   private Collider2D col;
   private Rigidbody2D rb;
 
@@ -71,6 +74,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
 
   void LateUpdate() {
+    if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     List<bool> preDisabled = new List<bool>();
     List<Transform> children = new List<Transform>();
     if (ignoreChildColliders) {
@@ -91,10 +95,10 @@ public class Physics2DCharacter : MonoBehaviour {
       transform.position = prevPos;
     } else Physics();
 
-    onGround = Cast(transform.position, Vector2.down * dirCollisionTestLength);
-    onCeiling = Cast(transform.position, Vector2.up * dirCollisionTestLength);
-    onRight = Cast(transform.position, Vector2.right * dirCollisionTestLength);
-    onLeft = Cast(transform.position, Vector2.left * dirCollisionTestLength);
+    onGround = cast.Cast(transform.position, Vector2.down * dirCollisionTestLength);
+    onCeiling = cast.Cast(transform.position, Vector2.up * dirCollisionTestLength);
+    onRight = cast.Cast(transform.position, Vector2.right * dirCollisionTestLength);
+    onLeft = cast.Cast(transform.position, Vector2.left * dirCollisionTestLength);
 
     stationary = postMovePos == transform.position;
 
@@ -126,31 +130,13 @@ public class Physics2DCharacter : MonoBehaviour {
     }
   }
 
-  private bool Collides(Vector2 pos) => Cast(pos, Vector2.zero);
-
-  private RaycastHit2D Cast(Vector2 start, Vector2 dir) {
-    Vector2 normalized = dir.x == 0 && dir.y == 0 ? Vector2.right : dir.normalized;
-    float length = dir.magnitude;
-    var results = new RaycastHit2D[1];
-    var prevPos = transform.position;
-    transform.position = start;
-    Physics2D.SyncTransforms();
-    rb.Cast(normalized, layers, results, length);
-    transform.position = prevPos;
-    Physics2D.SyncTransforms();
-    if (debug.casts) Debug.DrawRay(start, dir, debug.casts.color, 0);
-    if (results[0] && debug.allHitNormals) Debug.DrawRay(results[0].point, results[0].normal, debug.allHitNormals.color, 0);
-    return results[0];
-  }
-
-
 
   void MoveWithGround() {
     var colGo = onGround.collider.gameObject;
     if (colGo.isStatic) return; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
     var dir = (colGo.transform.position - colPrevTransform.position).xy();
-    var hit = Cast(transform.position, dir);
+    var hit = cast.Cast(transform.position, dir);
     if (!hit) {
       transform.position += colGo.transform.position - colPrevTransform.position;
       // !!! Rotation and scaling is not accounted for
@@ -158,7 +144,7 @@ public class Physics2DCharacter : MonoBehaviour {
       // transform.localScale += colTransform.localScale - colNewTransform.localScale;
     } else {
       var newPos = CollisionPos(hit, transform.position, dir).xyo();
-      if (!Collides(newPos))
+      if (!cast.Collides(newPos))
         transform.position = newPos;
     }
 
@@ -171,40 +157,43 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
   void Physics() {
+    rb.useFullKinematicContacts = true;
     float multiplier = math.max(0f, 1f - drag * Time.deltaTime);
     velocity *= multiplier;
     velocity.y -= gravity * Time.deltaTime;
 
-    if (Collides(transform.position)) {
+    if (cast.Collides(transform.position)) {
       Debug.LogWarning("Rigidbody was inside a collider");
       transform.position += new Vector3(0, 0.1f, 0);
     }
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
+    var forceSteps = false;
 
     for (int i = 0; i < maxPhysicsIters; i++) {
-      var hit = Cast(transform.position, endVel);
-
+      var hit = cast.Cast(transform.position, endVel);
       if (hit && debug.hitNormal)
         Debug.DrawRay(hit.point, hit.normal, debug.hitNormal.color, 0);
       if (hit) {
         // Height steps, stairs etc.
         var contactAngle = Vector2.Angle(Vector2.up, hit.normal);
         bool isSteep = contactAngle > maxAngle;
-        if ((onGround || airHeightStep) && isSteep && Vector2.Angle(Vector2.up, endVel) < 135) {
-          for (int j = 0; j < maxHeightVerticalSteps; j++) {
-            var heighStep = maxHeightStep / (j + 1);
+        if (forceSteps || ((onGround || airHeightStep) && isSteep) && Vector2.Angle(Vector2.up, endVel) < 135) {
+          forceSteps = false;
+          var heighStep = maxHeightStep * 2;
+          for (int j = 0; j < maxHeightSteps.y; j++) {
+            heighStep /= 2;
             var pos = transform.position.xy().AddY(heighStep);
 
             bool breakOuter = false;
             RaycastHit2D horHit;
-            float horStep = 0;
-            for (int k = 0; k < maxHeightHorizontalSteps; k++) {
-              horStep = endVel.x / (k + 1);
-              horHit = Cast(pos, new Vector2((endVel.x >= 0 ? 1 : -1) * horStep, 0));
+            float horStep = endVel.x * 2;
+            for (int k = 0; k < maxHeightSteps.x; k++) {
+              horStep /= 2;
+              horHit = cast.Cast(pos, new Vector2(horStep, 0));
               if (!horHit)
                 break;
-              else if (k == maxHeightHorizontalSteps - 1) {
+              else if (k == maxHeightSteps.x - 1) {
                 breakOuter = true;
                 break;
               }
@@ -212,12 +201,11 @@ public class Physics2DCharacter : MonoBehaviour {
             if (breakOuter) break;
             var dir = new Vector2(0, -heighStep);
             var downPos = pos.AddX(horStep);
-            var downHit = Cast(downPos, dir);
+            var downHit = cast.Cast(downPos, dir);
             if (downHit && Vector2.Angle(Vector2.up, downHit.normal) < maxAngle) {
               var collisionPos = CollisionPos(downHit, downPos, dir);
-              if (!Collides(collisionPos))
-                transform.position = collisionPos;
-              // return;
+              cast.TryMoveTo(collisionPos);
+              return;
             }
           }
         }
@@ -236,8 +224,12 @@ public class Physics2DCharacter : MonoBehaviour {
           velocity *= math.abs(hit.normal) * -1 + 1;
 
 
-        if (!Collides(colPos) || Input.GetKey(KeyCode.P))
-          transform.position = colPos;
+
+        if (!cast.TryMoveTo(colPos))
+          if (i != 0 && onGround && (contactAngle % 90 < nearAxisAngleOffsetRange || contactAngle % 90 > 90 - nearAxisAngleOffsetRange))
+            cast.TryMoveTo(colPos + hit.normal * nearAxisAngleOffset);
+
+
 
         // Project velocity along normal of collision
         if (!onGround || contactAngle >= 90 || contactAngle < maxAngle || endVel.x == 0 || hit.normal.x >= 0 == endVel.x >= 0) // Fixes going towards slopes causing jitter
@@ -246,21 +238,16 @@ public class Physics2DCharacter : MonoBehaviour {
       } else {
 
         // Free move
-        if (!Collides(transform.position.AddXY(endVel)))
-          transform.position += new Vector3(endVel.x, endVel.y);
+        cast.TryMoveTo(transform.position.AddXY(endVel));
 
         // Down slopes
         if (onGround) {
           var dir = Vector2.down * (endVel.x * math.tan(maxAngle * Mathf.Deg2Rad) + maxHeightStep);
-          var downHit = Cast(transform.position, dir);
+          var downHit = cast.Cast(transform.position, dir);
 
           if (downHit && (math.abs(downHit.normal.x) < 0.00001f || (endVel.x < 0 == downHit.normal.x < 0)) && Vector2.Angle(Vector2.up, downHit.normal) <= maxAngle) {
             var colPos = CollisionPos(downHit, transform.position, dir);
-            if (!Collides(colPos))
-              transform.position = colPos;
-            else {
-              print("asdasd");
-            }
+            cast.TryMoveTo(colPos);
           }
         }
         break;
@@ -295,7 +282,7 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
   [System.Serializable]
-  private class DebugOptions {
+  public class DebugOptions {
     [Tooltip("Stops the movement caused by this component")]
     public bool noMove;
     public DebugOption showDirectionalCollisions;
@@ -305,7 +292,7 @@ public class Physics2DCharacter : MonoBehaviour {
   }
 
   [System.Serializable]
-  private class DebugOption {
+  public class DebugOption {
     public bool enabled = false;
     public Color color = Color.white;
 

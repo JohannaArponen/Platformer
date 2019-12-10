@@ -389,14 +389,16 @@ MonoBehaviour:
     maxDepth: 0
     minNormalAngle: 0
     maxNormalAngle: 0
-  maxPhysicsIters: 3
+  maxPhysicsIters: 2
   contactOffset: 0.003771
   dirCollisionTestLength: 0.01
   steepVelocityProjectPower: 0.01
-  gravity: 0
+  nearAxisAngleOffsetRange: 20
+  nearAxisAngleOffset: 0.01
+  gravity: 100
   velocity:
     x: 0
-    y: 0
+    y: -0.057092596
   staticVelocity:
     x: 0
     y: 0
@@ -409,25 +411,22 @@ MonoBehaviour:
   onSlopeRight: 0
   onSlopeLeft: 0
   onSlope: 0
-  stationary: 0
-  slopeAngle: 0
+  stationary: 1
+  slopeAngle: 19.705366
   debug:
+    noMove: 0
     showDirectionalCollisions:
-      enabled: 0
-      color: {r: 1, g: 1, b: 1, a: 1}
-      duration: 0
+      enabled: 1
+      color: {r: 1, g: 0, b: 0.9864793, a: 1}
     hitNormal:
-      enabled: 0
+      enabled: 1
       color: {r: 1, g: 1, b: 1, a: 1}
-      duration: 0
     allHitNormals:
-      enabled: 0
-      color: {r: 1, g: 1, b: 1, a: 1}
-      duration: 0
+      enabled: 1
+      color: {r: 0.048508644, g: 1, b: 0, a: 0.27450982}
     casts:
-      enabled: 0
-      color: {r: 1, g: 1, b: 1, a: 1}
-      duration: 0
+      enabled: 1
+      color: {r: 0, g: 0.06282759, b: 1, a: 0.23137255}
 --- !u!114 &6890681697967849402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -446,7 +445,7 @@ MonoBehaviour:
   leftKey: 0
   rightKey: 0
   useVerticalAxisJump: 1
-  jumpKey: 0
+  jumpKey: 32
   jumpStrength: 25
   useVerticalAxisCrouch: 1
   crouchKey: 0
