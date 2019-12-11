@@ -51,9 +51,9 @@ public class Physics2DCharacter : MonoBehaviour {
   [Tooltip("Velocity which is not affected by gravity or drag")]
   public float2 debugVelocity;
 
-  [HideInInspector]
+
   /// <summary> Block the next physics update done by this component </summary>
-  public bool ignoreNextPhysicsUpdate = false;
+  [HideInInspector] public bool ignoreNextPhysicsUpdate = false;
 
   [HideInInspector] public RaycastHit2D onGround, onCeiling, onRight, onLeft;
   [HideInInspector] public bool onSlopeRight, onSlopeLeft, onSlope;
@@ -117,10 +117,12 @@ public class Physics2DCharacter : MonoBehaviour {
       onSlopeLeft = slopeAngle > maxAngle && onGround.normal.x >= 0;
       onSlope = onSlopeLeft || onSlopeRight;
 
-      if (moveWithGround && !onSlope) {
-        colPrevTransform = onGround.collider.gameObject.transform.Save();
-        validPrevcollider = true;
+      if (!onSlope) {
         velocity = 0;
+        if (moveWithGround) {
+          colPrevTransform = onGround.collider.gameObject.transform.Save();
+          validPrevcollider = true;
+        }
       }
     } else {
       validPrevcollider = false;
@@ -176,7 +178,7 @@ public class Physics2DCharacter : MonoBehaviour {
     velocity.y -= gravity * Time.deltaTime;
 
     if (cast.Collides(transform.position)) {
-      Debug.LogWarning("Rigidbody was inside a collider");
+      Debug.LogWarning("Physics2D Rigidbody was inside a collider");
       transform.position += new Vector3(0, 0.1f, 0);
     }
 
@@ -254,7 +256,9 @@ public class Physics2DCharacter : MonoBehaviour {
         cast.TryMoveTo(transform.position.AddXY(endVel));
 
         // Down slopes
-        if (onGround) {
+        if (endVel.x != 0 && onGround && !onSlope) {
+          // !!! PROJECT ALONG GROUND NORMAL INSTEAD
+          print("trying");
           var dir = Vector2.down * (endVel.x * math.tan(maxAngle * Mathf.Deg2Rad) + maxHeightStep);
           var downHit = cast.Cast(transform.position, dir);
 

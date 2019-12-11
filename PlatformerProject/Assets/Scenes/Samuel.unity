@@ -5963,7 +5963,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocity:
     x: 0
-    y: 0
+    y: 10
   layers:
     useTriggers: 0
     useLayerMask: 1
@@ -6087,7 +6087,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1459171540}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 30.13, y: -5.41, z: 0}
+  m_LocalPosition: {x: 17.43, y: -5.55, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -6520,12 +6520,12 @@ PrefabInstance:
     - target: {fileID: 2807954612462019357, guid: 0fb479a613e72054194f47847dc0f751,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.58
+      value: 4.36
       objectReference: {fileID: 0}
     - target: {fileID: 2807954612462019357, guid: 0fb479a613e72054194f47847dc0f751,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.6
+      value: 1.4
       objectReference: {fileID: 0}
     - target: {fileID: 2807954612462019357, guid: 0fb479a613e72054194f47847dc0f751,
         type: 3}
@@ -6572,26 +6572,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 120432872, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
-      propertyPath: saveDirDuration
-      value: 0.333
-      objectReference: {fileID: 0}
-    - target: {fileID: 120432872, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
-      propertyPath: allowDirectionChangeDuration
-      value: 0.333
-      objectReference: {fileID: 0}
-    - target: {fileID: 120432872, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
-      propertyPath: waitDuration
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 120432872, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
-      propertyPath: allowPrematureEnd
+    - target: {fileID: 120432871, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 2451872703283007099, guid: 0fb479a613e72054194f47847dc0f751,
+    - target: {fileID: 4423282331867000524, guid: 0fb479a613e72054194f47847dc0f751,
         type: 3}
-      propertyPath: m_Enabled
-      value: 0
+      propertyPath: m_Name
+      value: Anim
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}

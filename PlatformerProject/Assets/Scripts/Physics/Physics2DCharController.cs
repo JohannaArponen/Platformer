@@ -5,16 +5,21 @@ using Unity.Mathematics;
 
 [RequireComponent(typeof(Physics2DCharacter))]
 public class Physics2DCharController : MonoBehaviour {
+  [Tooltip("Units per second")]
   public float speed;
   [Tooltip("Allow increasing movement speed only to the value of Speed (E.G. if velocity would already give more speed)")]
   public bool limitSpeedIncrease = true;
+  [Tooltip("Take input from input horizontal axis. Left and right keys still work with this enabled")]
   public bool useHorizontalAxisMove = true;
+  [Tooltip("Use smoothed horizontal axis")]
   public bool axisMoveSmooth = true;
   public KeyCode leftKey;
   public KeyCode rightKey;
+  [Tooltip("Use vertical axis (when positive) for jump. Jump key still works with this enabled")]
   public bool useVerticalAxisJump = true;
   public KeyCode jumpKey;
   public float jumpStrength;
+  [Tooltip("Use vertical axis (when negative) for crouch. Crouch key still works with this enabled")]
   public bool useVerticalAxisCrouch = true;
   public KeyCode crouchKey;
 
@@ -55,7 +60,7 @@ public class Physics2DCharController : MonoBehaviour {
     physics.staticVelocity.x += move;
 
     // Jump
-    if ((physics.onGround && !physics.onSlope) || physics.stationary) {
+    if (((physics.onGround && !physics.onSlope) || physics.stationary) && !physics.onCeiling) {
       if ((useVerticalAxisJump && Input.GetAxisRaw("Vertical") > 0) || Input.GetKey(jumpKey)) {
         physics.velocity.y = jumpStrength;
       }
@@ -67,32 +72,37 @@ public class Physics2DCharController : MonoBehaviour {
     }
   }
 
-  /// <summary> Returns the direction the player is inputting. Both values range from -1 and 1. Smoothing value is only used if that input type is enabled </summary>
+  /// <summary> Returns the unnormalized direction the player is inputting. Both values range from -1 and 1. Smoothing value is only used if that input type is enabled </summary>
   public Vector2 GetUserDirection(bool smoothing = false) {
     var dir = Vector2.zero;
 
     if (useVerticalAxisCrouch) {
       var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
       if (axis < 0)
-        dir.y += axis;
-    } else if (useVerticalAxisCrouch ? (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")) < 0 : Input.GetKey(crouchKey))
+        dir.y += axis; // Adds negative value
+    }
+    if (Input.GetKey(crouchKey))
       dir.y -= 1;
 
     if (useVerticalAxisJump) {
       var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
       if (axis > 0)
-        dir.y += axis;
-    } else if (useVerticalAxisJump ? (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical")) > 0 : Input.GetKey(jumpKey))
-      dir.y -= 1;
+        dir.y += axis; // Adds positive value
+    }
+    if (Input.GetKey(jumpKey))
+      dir.y += 1;
 
     if (useHorizontalAxisMove) {
       dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
-    } else {
-      if (Input.GetKey(leftKey))
-        dir.x -= 1;
-      if (Input.GetKey(rightKey))
-        dir.x += 1;
     }
+
+    if (Input.GetKey(leftKey))
+      dir.x -= 1;
+    if (Input.GetKey(rightKey))
+      dir.x += 1;
+
+    dir = math.clamp(dir, -1, 1);
+
     return dir;
   }
 }

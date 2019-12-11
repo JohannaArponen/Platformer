@@ -530,12 +530,16 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  allowPrematureEnd: 1
+  allowAttack: 0
+  waitDuration: 0.1
+  saveDirDuration: 0.333
+  allowDirectionChangeDuration: 0.333
+  directionChangeRequireReleaseDuration: Infinity
+  dirChangeSmoothing: 0
   weapon: {fileID: 7280497764010111120}
   ctrlr: {fileID: 6890681697967849402}
   particles: {fileID: 0}
-  useDefaultDirection: 0
-  defaultDirection: {x: 1, y: 0}
-  disallowAttack: 1
 --- !u!1001 &6890681697861632826
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -543,11 +547,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2807954612462019357}
     m_Modifications:
-    - target: {fileID: 9054015657850244428, guid: 1bda266d67fe44e4c9211094dc7e556c,
-        type: 3}
-      propertyPath: m_Name
-      value: Camera
-      objectReference: {fileID: 0}
     - target: {fileID: 9054015657850244416, guid: 1bda266d67fe44e4c9211094dc7e556c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -601,6 +600,16 @@ PrefabInstance:
     - target: {fileID: 9054015657850244416, guid: 1bda266d67fe44e4c9211094dc7e556c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054015657850244428, guid: 1bda266d67fe44e4c9211094dc7e556c,
+        type: 3}
+      propertyPath: m_Name
+      value: Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 9054015657850244417, guid: 1bda266d67fe44e4c9211094dc7e556c,
+        type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9054015657850244417, guid: 1bda266d67fe44e4c9211094dc7e556c,

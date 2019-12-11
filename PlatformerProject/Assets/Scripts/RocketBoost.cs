@@ -22,6 +22,8 @@ public class RocketBoost : MonoBehaviour {
   public float saveDirDuration = 0.1f;
   [Tooltip("Allow the player to input a new direction for this long after initiating a boost")]
   public float allowDirectionChangeDuration = 0.1f;
+  [Tooltip("To prevent accidentally changing direction when releasing the directional keys, require the axis to be released for this long before possibly changing direction")]
+  public float directionChangeRequireReleaseDuration = 0.1f;
   [Tooltip("Use smoothed axises instead of raw")]
   public bool dirChangeSmoothing = false;
 
@@ -36,9 +38,12 @@ public class RocketBoost : MonoBehaviour {
   private float waitStartTime;
   private float channeledTime;
   private bool boosting = false;
-  private bool waiting = false;
+  private (float x, float y) releaseTime = (0f, 0f);
+  /// <summary> True if axis was 0 at the start of boost or while boosting </summary>
+  private (bool x, bool y) releasedWhileBoost = (false, false);
   private (float x, float y) saveDirTime = (0f, 0f);
   private Vector2 saveDir;
+
   private Physics2DCharacter charPhysics;
   private Physics2DBouncyMove bouncy;
 
@@ -62,8 +67,10 @@ public class RocketBoost : MonoBehaviour {
       }
       // Allow changing direction for a duration
       if (Time.time < boostStartTime + allowDirectionChangeDuration) {
-        print("asd");
-        var dir = ctrlr.GetUserDirection(true);
+        var dir = ctrlr.GetUserDirection(dirChangeSmoothing);
+        // Require release duration but recognize new key presses immediately
+        if (!releasedWhileBoost.x && dir.x == 0 && Time.time < releaseTime.x + directionChangeRequireReleaseDuration) dir.x = saveDir.x;
+        if (!releasedWhileBoost.y && dir.y == 0 && Time.time < releaseTime.y + directionChangeRequireReleaseDuration) dir.y = saveDir.y;
         if (!dir.Equals(Vector2.zero))
           bouncy.velocity = bouncy.velocity.SetDir(dir);
       }
@@ -82,13 +89,18 @@ public class RocketBoost : MonoBehaviour {
           channeledTime = 0;
       }
     }
-    SaveDir();
+    SaveDirs();
   }
 
   void StartBoost() {
     channeledTime = 0;
 
     var dir = ctrlr.GetUserDirection();
+    if (saveDirDuration > 0) {
+      // Allow previous inputs to complement current frame input
+      if (dir.x == 0 && Time.time < saveDirTime.x + saveDirDuration) dir.x = saveDir.x;
+      if (dir.y == 0 && Time.time < saveDirTime.y + saveDirDuration) dir.y = saveDir.y;
+    }
     if (dir.Equals(Vector2.zero)) {
       // Allow using previous inputs when zero was given
       if (Time.time < saveDirTime.x + saveDirDuration) dir.x = saveDir.x;
@@ -106,6 +118,8 @@ public class RocketBoost : MonoBehaviour {
     charPhysics.enabled = false;
     if (particles != null) particles.Play();
     bouncy.velocity = dir.SetLen(startSpeed);
+    releasedWhileBoost.x = dir.x == 0;
+    releasedWhileBoost.y = dir.y == 0;
     EnableAttack(false);
   }
 
@@ -120,13 +134,19 @@ public class RocketBoost : MonoBehaviour {
     EnableAttack(true);
   }
 
-  void SaveDir() {
+  void SaveDirs() {
     var dir = ctrlr.GetUserDirection();
-    if (dir.x != 0) {
+    if (dir.x == 0) {
+      if (boosting) releasedWhileBoost.x = true;
+      releaseTime.x = Time.time;
+    } else {
       saveDirTime.x = Time.time;
       saveDir.x = dir.x;
     }
-    if (dir.y != 0) {
+    if (dir.y == 0) {
+      if (boosting) releasedWhileBoost.y = true;
+      releaseTime.y = Time.time;
+    } else {
       saveDirTime.y = Time.time;
       saveDir.y = dir.y;
     }

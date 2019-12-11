@@ -19,8 +19,9 @@ public class Physics2DBouncyMove : MonoBehaviour {
   public float maxAngle;
   [Tooltip("Maximum allowed iterations. This many collisions per frame can be handled. Usually only one iteration is done but in corners 2 might be preferred. At high speeds more iterations may be desirable")]
   public int maxIterations = 5;
-  [Tooltip("A new iteration is not done if the velocity vector has lower SQUARED length")]
+  [Tooltip("A new iteration is not done if the velocity vector has lower length")]
   public float minIterationVelocity = 0.01f;
+  private float minIterationVelocitySQ;
   [Tooltip("Avoid getting stuck inside colliders by offsetting collision positions")]
   public float contactOffset = 0.003771f;
 
@@ -33,12 +34,20 @@ public class Physics2DBouncyMove : MonoBehaviour {
   void Start() {
     col = GetComponent<BoxCollider2D>();
     rb = GetComponent<Rigidbody2D>();
+    minIterationVelocitySQ = minIterationVelocity * minIterationVelocity;
   }
+  void OnValidate() => minIterationVelocitySQ = minIterationVelocity * minIterationVelocity;
+
 
   // Update is called once per frame
   void Update() {
     if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     var endVel = velocity * Time.deltaTime;
+
+    if (cast.Collides(transform.position)) {
+      Debug.LogWarning("Physics2D Rigidbody was inside a collider");
+      transform.position += new Vector3(0, 0.1f, 0);
+    }
 
     for (int i = 0; i < maxIterations; i++) {
       var hit = cast.Cast(transform.position, endVel);
@@ -49,11 +58,11 @@ public class Physics2DBouncyMove : MonoBehaviour {
         endVel *= 1 - hit.fraction;
         endVel = Vector2.Reflect(endVel, hit.normal);
         if (math.lengthsq(endVel) < minIterationVelocity) {
-          return;
+          break;
         }
       } else {
-        transform.position = transform.position.AddXY(endVel);
-        return;
+        cast.TryMoveTo(transform.position.AddXY(endVel));
+        break;
       }
     }
   }
