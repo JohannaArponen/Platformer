@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using MyBox;
 
 [RequireComponent(typeof(Physics2DCharacter))]
 public class Physics2DCharController : MonoBehaviour {
@@ -15,6 +16,14 @@ public class Physics2DCharController : MonoBehaviour {
   public bool axisMoveSmooth = true;
   public KeyCode leftKey;
   public KeyCode rightKey;
+  [Tooltip("Allows movement with vertical keys")]
+  public bool moveVertically;
+  [Tooltip("When other scripts request the user direction from this class use vertical keys instead of jump or crouch")]
+  public bool useVerticalKeysForUserDirection;
+  [Tooltip("Use vertical axis for vertical hotkeys. Up and down keys still work with this enabled")]
+  public bool useVerticalAxisMovement = true;
+  public KeyCode upKey;
+  public KeyCode downKey;
   [Tooltip("Use vertical axis (when positive) for jump. Jump key still works with this enabled")]
   public bool useVerticalAxisJump = true;
   public KeyCode jumpKey;
@@ -76,24 +85,36 @@ public class Physics2DCharController : MonoBehaviour {
   public Vector2 GetUserDirection(bool smoothing = false) {
     var dir = Vector2.zero;
 
-    if (useVerticalAxisCrouch) {
-      var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
-      if (axis < 0)
-        dir.y += axis; // Adds negative value
-    }
-    if (Input.GetKey(crouchKey))
-      dir.y -= 1;
+    if (useVerticalKeysForUserDirection) {
+      if (useVerticalAxisCrouch) {
+        var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
+        dir.y += axis;
+      }
+      if (Input.GetKey(upKey))
+        dir.y += 1;
+      if (Input.GetKey(downKey))
+        dir.y -= 1;
 
-    if (useVerticalAxisJump) {
-      var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
-      if (axis > 0)
-        dir.y += axis; // Adds positive value
-    }
-    if (Input.GetKey(jumpKey))
-      dir.y += 1;
+    } else {
+      if (useVerticalAxisCrouch) {
+        var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
+        if (axis < 0)
+          dir.y += axis; // Adds negative value
+      }
+      if (Input.GetKey(crouchKey))
+        dir.y -= 1;
 
-    if (useHorizontalAxisMove) {
-      dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
+      if (useVerticalAxisJump) {
+        var axis = (smoothing ? Input.GetAxis("Vertical") : Input.GetAxisRaw("Vertical"));
+        if (axis > 0)
+          dir.y += axis; // Adds positive value
+      }
+      if (Input.GetKey(jumpKey))
+        dir.y += 1;
+
+      if (useHorizontalAxisMove) {
+        dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
+      }
     }
 
     if (Input.GetKey(leftKey))

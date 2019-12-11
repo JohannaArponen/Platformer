@@ -51,7 +51,7 @@ public class Weapon : MonoBehaviour {
       var fraction = (Time.time - attackStart) / duration;
       if (animator != null) animator.SetFloat("Attack", fraction);
       if (fraction <= 1) {
-        var angle = (endAngle - startAngle) * fraction;
+        var angle = startAngle + (endAngle - startAngle) * fraction;
         parent.localRotation = Quaternion.AngleAxis(angle, Vector3.forward);
       } else {
         attacking = false;

@@ -6573,5 +6573,44 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6890681697967849402, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: useHorizontalAxisMove
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6890681697967849402, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: axisMoveSmooth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6890681697967849402, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: useVerticalAxisMovement
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 457086761, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 457086761, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 457086761, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 457086761, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1065384566, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: duration
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 1065384566, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: hide
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
