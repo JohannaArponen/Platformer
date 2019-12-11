@@ -26,6 +26,9 @@ public class Physics2DBouncyMove : MonoBehaviour {
   public float contactOffset = 0.003771f;
 
 
+  [HideInInspector]
+  public bool didHitSomething;
+
   private Physics2DCastUtil cast;
   private Collider2D col;
   private Rigidbody2D rb;
@@ -49,9 +52,11 @@ public class Physics2DBouncyMove : MonoBehaviour {
       transform.position += new Vector3(0, 0.1f, 0);
     }
 
+    didHitSomething = false;
     for (int i = 0; i < maxIterations; i++) {
       var hit = cast.Cast(transform.position, endVel);
       if (hit) {
+        didHitSomething = true;
         var collisionPos = CollisionPos(hit, transform.position, endVel);
         cast.TryMoveTo(collisionPos);
         velocity = Vector2.Reflect(velocity, hit.normal);

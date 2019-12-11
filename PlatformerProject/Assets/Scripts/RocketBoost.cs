@@ -34,15 +34,16 @@ public class RocketBoost : MonoBehaviour {
   [Tooltip("Optional particle system to use when boosting")]
   public ParticleSystem particles;
 
-  private float boostStartTime;
-  private float waitStartTime;
+  private float boostStartTime = float.NegativeInfinity;
+  private float waitStartTime = float.NegativeInfinity;
   private float channeledTime;
   private bool boosting = false;
-  private (float x, float y) releaseTime = (0f, 0f);
+  private (float x, float y) releaseTime = (float.NegativeInfinity, float.NegativeInfinity);
   /// <summary> True if axis was 0 at the start of boost or while boosting </summary>
   private (bool x, bool y) releasedWhileBoost = (false, false);
-  private (float x, float y) saveDirTime = (0f, 0f);
+  private (float x, float y) saveDirTime = (float.NegativeInfinity, float.NegativeInfinity);
   private Vector2 saveDir;
+  private bool hasHitSomething;
 
   private Physics2DCharacter charPhysics;
   private Physics2DBouncyMove bouncy;
@@ -60,19 +61,23 @@ public class RocketBoost : MonoBehaviour {
 
   // Update is called once per frame
   void Update() {
+    SaveDirs();
     if (boosting) {
       if ((allowPrematureEnd && Input.GetKeyDown(weapon.key)) || Time.time >= boostStartTime + duration) {
         EndBoost();
         return;
       }
+      if (bouncy.didHitSomething)
+        hasHitSomething = true;
       // Allow changing direction for a duration
-      if (Time.time < boostStartTime + allowDirectionChangeDuration) {
+      if (!hasHitSomething && Time.time < boostStartTime + allowDirectionChangeDuration) {
         var dir = ctrlr.GetUserDirection(dirChangeSmoothing);
         // Require release duration but recognize new key presses immediately
         if (!releasedWhileBoost.x && dir.x == 0 && Time.time < releaseTime.x + directionChangeRequireReleaseDuration) dir.x = saveDir.x;
         if (!releasedWhileBoost.y && dir.y == 0 && Time.time < releaseTime.y + directionChangeRequireReleaseDuration) dir.y = saveDir.y;
-        if (!dir.Equals(Vector2.zero))
+        if (!dir.Equals(Vector2.zero)) {
           bouncy.velocity = bouncy.velocity.SetDir(dir);
+        }
       }
       var speed = startSpeed + speedCurve.Evaluate((Time.time - boostStartTime) / duration) * (endSpeed - startSpeed);
       bouncy.velocity = bouncy.velocity.SetLenSafer(speed);
@@ -89,7 +94,6 @@ public class RocketBoost : MonoBehaviour {
           channeledTime = 0;
       }
     }
-    SaveDirs();
   }
 
   void StartBoost() {
@@ -112,6 +116,7 @@ public class RocketBoost : MonoBehaviour {
       }
     }
 
+    hasHitSomething = false;
     boosting = true;
     boostStartTime = Time.time;
     bouncy.enabled = true;
@@ -120,6 +125,8 @@ public class RocketBoost : MonoBehaviour {
     bouncy.velocity = dir.SetLen(startSpeed);
     releasedWhileBoost.x = dir.x == 0;
     releasedWhileBoost.y = dir.y == 0;
+    releaseTime.x = float.NegativeInfinity;
+    releaseTime.x = float.NegativeInfinity;
     EnableAttack(false);
   }
 
@@ -137,15 +144,19 @@ public class RocketBoost : MonoBehaviour {
   void SaveDirs() {
     var dir = ctrlr.GetUserDirection();
     if (dir.x == 0) {
-      if (boosting) releasedWhileBoost.x = true;
-      releaseTime.x = Time.time;
+      if (boosting) {
+        releasedWhileBoost.x = true;
+        releaseTime.x = Time.time;
+      }
     } else {
       saveDirTime.x = Time.time;
       saveDir.x = dir.x;
     }
     if (dir.y == 0) {
-      if (boosting) releasedWhileBoost.y = true;
-      releaseTime.y = Time.time;
+      if (boosting) {
+        releasedWhileBoost.y = true;
+        releaseTime.y = Time.time;
+      }
     } else {
       saveDirTime.y = Time.time;
       saveDir.y = dir.y;

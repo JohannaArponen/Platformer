@@ -5983,6 +5983,7 @@ MonoBehaviour:
   maxIterations: 2
   minIterationVelocity: 0.01
   contactOffset: 0.003771
+  didHitSomething: 0
 --- !u!50 &1459171542
 Rigidbody2D:
   serializedVersion: 4
@@ -6571,15 +6572,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 120432871, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4423282331867000524, guid: 0fb479a613e72054194f47847dc0f751,
-        type: 3}
-      propertyPath: m_Name
-      value: Anim
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}

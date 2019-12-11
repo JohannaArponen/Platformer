@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class Weapon : MonoBehaviour {
 
+  [Tooltip("Optional. Does animation. Attack boolean value is passed as \"Attack\"")]
+  public Animator animator;
   public KeyCode key = KeyCode.X;
   public float damage = 1;
   public float startAngle = 45;
@@ -39,7 +41,7 @@ public class Weapon : MonoBehaviour {
   }
 
   void Hide(bool enable = false) {
-    sr.enabled = enable;
+    if (sr != null) sr.enabled = enable;
     col.enabled = enable;
   }
 
@@ -47,6 +49,7 @@ public class Weapon : MonoBehaviour {
   void Update() {
     if (attacking) {
       var fraction = (Time.time - attackStart) / duration;
+      if (animator != null) animator.SetFloat("Attack", fraction);
       if (fraction <= 1) {
         var angle = (endAngle - startAngle) * fraction;
         parent.localRotation = Quaternion.AngleAxis(angle, Vector3.forward);
@@ -58,6 +61,7 @@ public class Weapon : MonoBehaviour {
     } else if (!disallowAttack && attackStart + duration + cooldown < Time.time && Input.GetKey(key)) {
       attackStart = Time.time;
       attacking = true;
+      if (animator != null) animator.SetFloat("Attack", 0.0001f);
       parent.localRotation = Quaternion.AngleAxis(startAngle, Vector3.forward);
       if (hide) Hide(true);
     }

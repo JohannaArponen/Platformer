@@ -7,6 +7,10 @@ using Unity.Mathematics;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Physics2DCharacter : MonoBehaviour {
 
+  [Tooltip("Optional. Does animation. Speed value is passed as \"Speed\"")]
+  public Animator animator;
+  [Tooltip("Speed of move animation is multiplied by this")]
+  public float animationSpeedMultiplier = 1;
   [Tooltip("Default gravity")]
   public float defaultGravity = 1000f;
   [Tooltip("Drag")]
@@ -81,13 +85,15 @@ public class Physics2DCharacter : MonoBehaviour {
 
   void LateUpdate() {
     if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
-    List<bool> preDisabled = new List<bool>();
-    List<Transform> children = new List<Transform>();
+    List<Transform> disabledChildren = new List<Transform>();
     if (ignoreChildColliders) {
       foreach (Transform child in transform) {
-        preDisabled.Add(!child.gameObject.activeSelf);
-        children.Add(child);
-        child.gameObject.SetActive(false);
+        if (child.GetComponentInChildren<Collider2D>() != null) {
+          if (child.gameObject.activeSelf) {
+            disabledChildren.Add(child);
+            child.gameObject.SetActive(false);
+          }
+        }
       }
     }
 
@@ -101,6 +107,7 @@ public class Physics2DCharacter : MonoBehaviour {
       Physics();
       transform.position = prevPos;
     } else Physics();
+
 
     ignoreNextPhysicsUpdate = false;
 
@@ -131,16 +138,15 @@ public class Physics2DCharacter : MonoBehaviour {
       onSlopeLeft = false;
       onSlope = false;
     }
-    staticVelocity = Vector2.zero;
 
-    if (ignoreChildColliders) {
-      for (int i = 0; i < preDisabled.Count; i++) {
-        if (!preDisabled[i]) {
-          children[i].gameObject.SetActive(true);
-        }
-      }
-    }
+    if (ignoreChildColliders)
+      foreach (var child in disabledChildren)
+        child.gameObject.SetActive(true);
+
+    if (animator != null)
+      animator.SetFloat("Speed", !onGround || onSlope ? 0 : math.abs((finalPos.x - transform.position.x) * animationSpeedMultiplier / Time.deltaTime));
     finalPos = transform.position;
+    staticVelocity = Vector2.zero;
   }
 
 
@@ -183,8 +189,8 @@ public class Physics2DCharacter : MonoBehaviour {
     }
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
-    var forceSteps = false;
 
+    var forceSteps = false;
     for (int i = 0; i < maxPhysicsIters; i++) {
       var hit = cast.Cast(transform.position, endVel);
       if (hit && debug.hitNormal)
@@ -258,7 +264,6 @@ public class Physics2DCharacter : MonoBehaviour {
         // Down slopes
         if (endVel.x != 0 && onGround && !onSlope) {
           // !!! PROJECT ALONG GROUND NORMAL INSTEAD
-          print("trying");
           var dir = Vector2.down * (endVel.x * math.tan(maxAngle * Mathf.Deg2Rad) + maxHeightStep);
           var downHit = cast.Cast(transform.position, dir);
 
