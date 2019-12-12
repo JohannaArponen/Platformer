@@ -5978,8 +5978,9 @@ MonoBehaviour:
     maxDepth: 0
     minNormalAngle: 0
     maxNormalAngle: 0
-  minAngle: 0
-  maxAngle: 0
+  angles:
+    Min: 0
+    Max: 90
   maxIterations: 2
   minIterationVelocity: 0.01
   contactOffset: 0.003771
@@ -6577,6 +6578,19 @@ PrefabInstance:
         type: 3}
       propertyPath: useHorizontalAxisMove
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4656773028732009192, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: flipSprite
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 120432871, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: angles.Min
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 120432871, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
+      propertyPath: angles.Max
+      value: 90
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}

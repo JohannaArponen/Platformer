@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using MyBox;
 
 
 [RequireComponent(typeof(Collider2D))]
@@ -11,17 +12,26 @@ public class Physics2DBouncyMove : MonoBehaviour {
   public float2 velocity;
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
-  [Range(0, 90)]
-  [Tooltip("Minimum collision angle for reflection. Smaller collision angles make the object slide along the collision")]
-  public float minAngle;
-  [Range(0, 90)]
-  [Tooltip("Maximum collision angle for reflection. Bigger collision angles stop the object")]
-  public float maxAngle;
+  // !!! Do this
+  [Range(0, 360)]
+  [Tooltip("Restrict reflection angle (world space). E.g. having the value 10 would round the reflection angle to nearest 10, 90 would make the direction be up,down,right or left. Leave at 0 to disable. It is recommended that this is a divisor of 360")]
+  public float reflectionAngleRounding = 0;
+  [Range(0, 360)]
+  [Tooltip("Literally just adds this value to the angle that is rounded and then substracts it")]
+  public float reflectionAngleRoundingOffset = 0;
+  [MinMaxRange(0, 90)]
+  [Tooltip("Range of collision angles to reflect from. Smaller collisions cause sliding and bigger stop the object")]
+  public RangedFloat angles = new RangedFloat(0, 90);
+  [Tooltip("Keep current speed when sliding")]
+  public bool keepSpeedOnSlide = false;
+  [PositiveValueOnly]
   [Tooltip("Maximum allowed iterations. This many collisions per frame can be handled. Usually only one iteration is done but in corners 2 might be preferred. At high speeds more iterations may be desirable")]
   public int maxIterations = 5;
+  [PositiveValueOnly]
   [Tooltip("A new iteration is not done if the velocity vector has lower length")]
   public float minIterationVelocity = 0.01f;
   private float minIterationVelocitySQ;
+  [PositiveValueOnly]
   [Tooltip("Avoid getting stuck inside colliders by offsetting collision positions")]
   public float contactOffset = 0.003771f;
 
@@ -59,11 +69,27 @@ public class Physics2DBouncyMove : MonoBehaviour {
         didHitSomething = true;
         var collisionPos = CollisionPos(hit, transform.position, endVel);
         cast.TryMoveTo(collisionPos);
+        var angle = Vector2.Angle(velocity, hit.normal) - 90;
+        print(angle);
+        if (angle > angles.max) {
+          velocity = 0;
+          break;
+        }
+        if (angle < angles.min) {
+          if (angles.min != 0 && keepSpeedOnSlide)
+            velocity = Vector3.Project((Vector2)velocity, new Vector2(-hit.normal.y, hit.normal.x)).xy().SetLen(math.length(velocity));
+          else
+            velocity = Vector3.Project((Vector2)velocity, new Vector2(-hit.normal.y, hit.normal.x)).xy();
+          break;
+        }
         velocity = Vector2.Reflect(velocity, hit.normal);
         endVel *= 1 - hit.fraction;
-        endVel = Vector2.Reflect(endVel, hit.normal);
-        if (math.lengthsq(endVel) < minIterationVelocity) {
+        if (math.lengthsq(endVel) < minIterationVelocitySQ)
           break;
+
+        endVel = Vector2.Reflect(endVel, hit.normal);
+        if (reflectionAngleRounding != 0) {
+
         }
       } else {
         cast.TryMoveTo(transform.position.AddXY(endVel));

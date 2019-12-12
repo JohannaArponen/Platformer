@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using MyBox;
 
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -9,16 +10,23 @@ public class Physics2DCharacter : MonoBehaviour {
 
   [Tooltip("Optional. Does animation. Speed value is passed as \"Speed\"")]
   public Animator animator;
-  [ConditionalField("animator")]
+  [ConditionalField(nameof(animator))]
   [Tooltip("Speed of move animation is multiplied by this")]
   public float animationSpeedMultiplier = 1;
+  [Tooltip("Flip the first found sprite when moving left")]
+  public bool flipSprite = true;
+  private bool flip = false;
+  [Tooltip("By default only the first SpriteRenderer found by GetComponentsInChildren")]
+  public SpriteRenderer[] sprites = new SpriteRenderer[0];
   [Tooltip("Default gravity")]
   public float defaultGravity = 1000f;
+  [PositiveValueOnly]
   [Tooltip("Drag")]
   public float drag = 0.05f;
-  [Range(0, 90f)]
+  [Range(0, 89.9f)]
   [Tooltip("Maximum walkable slope. Slopes steeper than this cause sliding")]
   public float maxAngle = 45;
+  [PositiveValueOnly]
   [Tooltip("Maximum height of an obstacle that is stepped over")]
   public float maxHeightStep = 0.1f;
   [Tooltip("Allow moving stepping over obstacles in air")]
@@ -31,10 +39,13 @@ public class Physics2DCharacter : MonoBehaviour {
   public float2 maxHeightSteps = 1;
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
+  [PositiveValueOnly]
   [Tooltip("Maximum physics box raycasts. When a raycast collides, a new raycast is done along its vector")]
   public int maxPhysicsIters = 3;
+  [PositiveValueOnly]
   [Tooltip("Avoid getting stuck inside colliders by offsetting collision positions")]
   public float contactOffset = 0.003771f;
+  [PositiveValueOnly]
   [Tooltip("Length of raycast when testing collision (ground, ceiling, left and right checks)")]
   public float dirCollisionTestLength = 0.01f;
   [Tooltip("Smaller values increase the amount of sliding on steep angles")]
@@ -42,6 +53,7 @@ public class Physics2DCharacter : MonoBehaviour {
   [Range(0, 45f)]
   [Tooltip("Sometimes go gets stuck on things because the physics engine gives us a wrong normal value. If we failed to move and the normal angle is at most this far away from any axis, move along the normal by the value below")]
   public float nearAxisAngleOffsetRange = 2;
+  [PositiveValueOnly]
   [Tooltip("Sometimes go gets stuck on things because the physics engine gives us a wrong normal value. If we failed to move and the normal angle is at most this")]
   public float nearAxisAngleOffset = 0.1f;
 
@@ -80,6 +92,11 @@ public class Physics2DCharacter : MonoBehaviour {
     col = GetComponent<BoxCollider2D>();
     rb = GetComponent<Rigidbody2D>();
     gravity = defaultGravity;
+    if (sprites.Length == 0) {
+      var sr = GetComponentInChildren<SpriteRenderer>();
+      if (sr == null) throw new UnityException("No SpriteRenderer defined and none found in children");
+      sprites = new SpriteRenderer[1] { sr };
+    }
   }
 
 
@@ -277,6 +294,22 @@ public class Physics2DCharacter : MonoBehaviour {
       }
       if (endVel.Equals(Vector2.one)) {
         break;
+      }
+    }
+
+    if (flipSprite && endVel.x != 0) {
+      if (endVel.x > 0) {
+        if (flip) {
+          foreach (var sr in sprites) {
+            sr.flipX = false;
+            flip = !flip;
+          }
+        }
+      } else if (!flip) {
+        foreach (var sr in sprites) {
+          sr.flipX = true;
+          flip = !flip;
+        }
       }
     }
   }

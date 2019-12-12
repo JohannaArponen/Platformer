@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MyBox;
 
 [RequireComponent(typeof(Enemy))]
 [RequireComponent(typeof(Physics2DCharacter))]
 public class Physics2DCharEnemyAI : MonoBehaviour {
   public float speed;
+  [PositiveValueOnly]
   public float jumpStrength;
 
   private Enemy enemy;

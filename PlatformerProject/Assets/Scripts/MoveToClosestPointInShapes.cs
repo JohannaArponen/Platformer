@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MyBox;
 
 public class MoveToClosestPointInShapes : MonoBehaviour {
 
@@ -21,9 +22,9 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
   public Transform target;
   public Vector3 offset = Vector3.zero;
   public bool smoothDamp = true;
-  [ConditionalField("smoothDamp")]
+  [ConditionalField(nameof(smoothDamp))]
   public float dampSpeed = 1;
-  [ConditionalField("smoothDamp")]
+  [ConditionalField(nameof(smoothDamp))]
   public float dampMaxSpeed = 1;
 
   public List<Vector3> lines = new List<Vector3>();
