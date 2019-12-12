@@ -274,16 +274,17 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
   }
 
   void Clean() {
-    if (!t.removeIdentical) return;
-    var hashList = new HashSet<(Vector3, Vector3)>();
-    for (int i = 1; i < t.lines.Count; i += 2) {
-      var line = (t.lines[i - 1], t.lines[i]);
-      if (hashList.Contains(line)) {
-        t.lines.RemoveRange(i - 1, 2);
-        i -= 2;
-        Dirty();
-      } else
-        hashList.Add(line);
+    if (t.removeIdentical) {
+      var hashList = new HashSet<(Vector3, Vector3)>();
+      for (int i = 1; i < t.lines.Count; i += 2) {
+        var line = (t.lines[i - 1], t.lines[i]);
+        if (hashList.Contains(line)) {
+          t.lines.RemoveRange(i - 1, 2);
+          i -= 2;
+          Dirty();
+        } else
+          hashList.Add(line);
+      }
     }
     if (t.removeZeroLength) {
       for (int i = 1; i < t.lines.Count; i += 2) {

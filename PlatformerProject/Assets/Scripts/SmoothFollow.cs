@@ -31,6 +31,7 @@ public class SmoothFollow : MonoBehaviour {
   void Start() {
     if (!target) {
       target = gameObject.GetComponentInParent<Transform>();
+      if (!target) throw new UnityException("No target defined and no parent GameObject! Define the target in inspector or parent this GameObject");
     }
     var _x = x ? target.transform.position.x : transform.position.x;
     var _y = y ? target.transform.position.y : transform.position.y;

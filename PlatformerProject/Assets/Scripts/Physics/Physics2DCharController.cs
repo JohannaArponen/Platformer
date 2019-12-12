@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
-using MyBox;
 
 [RequireComponent(typeof(Physics2DCharacter))]
 public class Physics2DCharController : MonoBehaviour {
@@ -17,20 +16,20 @@ public class Physics2DCharController : MonoBehaviour {
   public KeyCode leftKey;
   public KeyCode rightKey;
   [Tooltip("Allows movement with vertical keys")]
-  public bool moveVertically;
+  public bool moveVertically = false;
   [Tooltip("When other scripts request the user direction from this class use vertical keys instead of jump or crouch")]
   public bool useVerticalKeysForUserDirection;
   [Tooltip("Use vertical axis for vertical hotkeys. Up and down keys still work with this enabled")]
-  public bool useVerticalAxisMovement = true;
+  public bool useVerticalAxisMovement = false;
   public KeyCode upKey;
   public KeyCode downKey;
   [Tooltip("Use vertical axis (when positive) for jump. Jump key still works with this enabled")]
-  public bool useVerticalAxisJump = true;
-  public KeyCode jumpKey;
+  public bool useVerticalAxisJump = false;
+  public KeyCode jumpKey = KeyCode.Space;
   public float jumpStrength;
   [Tooltip("Use vertical axis (when negative) for crouch. Crouch key still works with this enabled")]
-  public bool useVerticalAxisCrouch = true;
-  public KeyCode crouchKey;
+  public bool useVerticalAxisCrouch = false;
+  public KeyCode crouchKey = KeyCode.C;
 
   private Physics2DCharacter physics;
 

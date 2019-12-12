@@ -21,7 +21,9 @@ public class MoveToClosestPointInShapes : MonoBehaviour {
   public Transform target;
   public Vector3 offset = Vector3.zero;
   public bool smoothDamp = true;
+  [ConditionalField("smoothDamp")]
   public float dampSpeed = 1;
+  [ConditionalField("smoothDamp")]
   public float dampMaxSpeed = 1;
 
   public List<Vector3> lines = new List<Vector3>();

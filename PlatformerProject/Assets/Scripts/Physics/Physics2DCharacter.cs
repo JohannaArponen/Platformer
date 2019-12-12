@@ -9,6 +9,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
   [Tooltip("Optional. Does animation. Speed value is passed as \"Speed\"")]
   public Animator animator;
+  [ConditionalField("animator")]
   [Tooltip("Speed of move animation is multiplied by this")]
   public float animationSpeedMultiplier = 1;
   [Tooltip("Default gravity")]
