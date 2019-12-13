@@ -5,46 +5,59 @@ public static class VectorExtensions {
 
   // *********************** float2 *********************** //
 
-  public static bool LongerThan(this float2 v, float2 b) => math.lengthsq(v) > math.lengthsq(b);
+  public static bool LongerThan(this float2 v, float2 smaller) => math.lengthsq(v) > math.lengthsq(smaller);
 
 
   public static float2 SetLen(this float2 v, float length) => math.normalize(v) * length;
-  public static float2 SetLenSafe(this float2 v, float length, float2 defaultValue) => math.normalize(v.x != 0 || v.y != 0 ? v : defaultValue) * length;
-  public static float2 SetLenSafer(this float2 v, float length, float2 defaultValue = default(float2)) => math.normalizesafe(v.x != 0 || v.y != 0 ? v : defaultValue) * length;
+  public static float2 SetLenSafe(this float2 v, float length, float2 defaultValue = default(float2)) => math.normalizesafe(v, defaultValue) * length;
   public static float2 AddLen(this float2 v, float addition) => math.normalize(v) * (math.length(v) + addition);
-  public static float2 AddLenSafe(this float2 v, float addition) => math.normalizesafe(v) * (math.length(v) + addition);
+  public static float2 AddLenSafe(this float2 v, float addition, float2 defaultValue = default(float2)) => math.normalizesafe(v, defaultValue) * (math.length(v) + addition);
 
 
+
+  public static float2 SetAngle(this float2 v, float degrees) => math.rotate(quaternion.EulerXYZ(0, 0, math.radians(degrees)), new float3(math.length(v), 0, 0)).xy;
+  public static float2 SetAngleRadians(this float2 v, float radians) => math.rotate(quaternion.EulerXYZ(0, 0, radians), new float3(math.length(v), 0, 0)).xy;
+  public static float Angle(this float2 v) => math.degrees(v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y) * -1) : math.atan2(v.x, v.y));
+  public static float AngleRadians(this float2 v) => v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y) * -1) : math.atan2(v.x, v.y);
 
   public static float2 SetDir(this float2 v, float2 d) => math.normalize(d * math.length(v));
-  public static float2 SetDirSafe(this float2 v, float2 d) => math.normalizesafe(d * math.length(v));
+  public static float2 SetDirSafe(this float2 v, float2 d, float2 defaultvalue = default(float2)) => math.normalizesafe(d, defaultvalue) * math.length(v);
 
 
   // *********************** float3 *********************** //
 
-  public static bool LongerThan(this float3 v, float3 b) => math.lengthsq(v) > math.lengthsq(b);
+  public static bool LongerThan(this float3 v, float3 smaller) => math.lengthsq(v) > math.lengthsq(smaller);
 
 
   public static float3 SetLen(this float3 v, float length) => math.normalize(v) * length;
-  public static float3 SetLenSafe(this float3 v, float length, float3 defaultValue) => math.normalize(v.x != 0 || v.y != 0 || v.z != 0 ? v : defaultValue) * length;
-  public static float3 SetLenSafer(this float3 v, float length, float3 defaultValue = default(float3)) => math.normalizesafe(v.x != 0 || v.y != 0 || v.z != 0 ? v : defaultValue) * length;
+  public static float3 SetLenSafe(this float3 v, float length, float3 defaultValue = default(float3)) => math.normalizesafe(v, defaultValue) * length;
   public static float3 AddLen(this float3 v, float addition) => math.normalize(v) * (math.length(v) + addition);
-  public static float3 AddLenSafe(this float3 v, float addition) => math.normalizesafe(v) * (math.length(v) + addition);
+  public static float3 AddLenSafe(this float3 v, float addition, float3 defaultvalue = default(float3)) => math.normalizesafe(v, defaultvalue) * (math.length(v) + addition);
 
 
 
   public static float3 SetDir(this float3 v, float3 d) => math.normalize(d * math.length(v));
-  public static float3 SetDirSafe(this float3 v, float3 d) => math.normalizesafe(d * math.length(v));
+  public static float3 SetDirSafe(this float3 v, float3 d, float3 defaultvalue = default(float3)) => math.normalizesafe(d, defaultvalue) * math.length(v);
 
 
   // *********************** Vector2 *********************** //
 
-  public static Vector2 SetLen(this Vector2 v, float length) => v.normalized * length;
-  public static Vector2 SetLenSafe(this Vector2 v, float length, Vector2 defaultValue) => math.normalize(v.x != 0 || v.y != 0 ? v : defaultValue) * length;
-  public static Vector2 SetLenSafer(this Vector2 v, float length, Vector2 defaultValue = default(Vector2)) => math.normalizesafe(v.x != 0 || v.y != 0 ? v : defaultValue) * length;
-  public static Vector2 AddLen(this Vector2 v, float addition) => v.normalized * (v.magnitude + addition);
-  public static Vector2 AddLenSafe(this Vector2 v, float addition) => math.normalizesafe(v) * (v.magnitude + addition);
 
+  public static bool LongerThan(this Vector2 v, Vector2 smaller) => v.sqrMagnitude > smaller.sqrMagnitude;
+
+
+  public static Vector2 SetLen(this Vector2 v, float length) => v.normalized * length;
+  public static Vector2 SetLenSafe(this Vector2 v, float length, Vector2 defaultValue) => math.normalizesafe(v, defaultValue) * length;
+  public static Vector2 AddLen(this Vector2 v, float addition) => v.normalized * (v.magnitude + addition);
+  public static Vector2 AddLenSafe(this Vector2 v, float addition, Vector2 defaultValue = default(Vector2)) => math.normalizesafe(v, defaultValue) * (v.magnitude + addition);
+
+
+  public static Vector2 SetAngle(this Vector2 v, float degrees) => Quaternion.Euler(0, 0, degrees) * new Vector2(v.magnitude, 0);
+#pragma warning disable CS0618
+  public static Vector2 SetAngleRadians(this Vector2 v, float radians) => Quaternion.EulerAngles(0, 0, radians) * new Vector2(v.magnitude, 0);
+#pragma warning restore CS0618
+  public static float Angle(this Vector2 v) => math.degrees(v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y)) * -1 : math.atan2(v.x, v.y));
+  public static float AngleRadians(this Vector2 v) => v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y)) * -1 : math.atan2(v.x, v.y);
 
 
   public static Vector2 SetDir(this Vector2 v, Vector2 d) => d.normalized * v.magnitude;
@@ -52,7 +65,7 @@ public static class VectorExtensions {
 
 
 
-  public static Vector2 xy(this Vector2 v) => new Vector2(v.x, v.y);
+  // public static Vector2 xy(this Vector2 v) => new Vector2(v.x, v.y);
   public static Vector2 yx(this Vector2 v) => new Vector2(v.y, v.x);
 
   public static Vector3 xxx(this Vector2 v) => new Vector3(v.x, v.x, v.x);
@@ -70,7 +83,7 @@ public static class VectorExtensions {
   public static Vector2 ox(this Vector2 v) => new Vector2(0, v.x);
   public static Vector2 oy(this Vector2 v) => new Vector2(0, v.y);
   public static Vector2 yo(this Vector2 v) => new Vector2(v.y, 0);
-  public static Vector2 oo(this Vector2 v) => new Vector2(0, 0);
+  // public static Vector2 oo(this Vector2 v) => new Vector2(0, 0);
 
 
   public static Vector3 oxx(this Vector2 v) => new Vector3(0, v.x, v.x);
@@ -79,7 +92,7 @@ public static class VectorExtensions {
   public static Vector3 oxo(this Vector2 v) => new Vector3(0, v.x, 0);
   public static Vector3 oox(this Vector2 v) => new Vector3(0, 0, v.x);
   public static Vector3 xoo(this Vector2 v) => new Vector3(v.x, 0, 0);
-  public static Vector3 ooo(this Vector2 v) => new Vector3(0, 0, 0);
+  // public static Vector3 ooo(this Vector2 v) => new Vector3(0, 0, 0);
 
   public static Vector3 oyy(this Vector2 v) => new Vector3(0, v.y, v.y);
   public static Vector3 yoy(this Vector2 v) => new Vector3(v.y, 0, v.y);
@@ -99,6 +112,9 @@ public static class VectorExtensions {
 
   public static Vector2 Add(this Vector2 v, int b) => new Vector2(v.x + b, v.y + b);
   public static Vector2 Add(this Vector2 v, float b) => new Vector2(v.x + b, v.y + b);
+  public static Vector2 Add(this Vector2 v, float2 b) => new Vector2(v.x + b.x, v.y + b.y);
+  public static Vector3 Add(this Vector2 v, float3 b) => new Vector3(v.x + b.x, v.y + b.y, b.z);
+  public static Vector3 Add(this Vector2 v, Vector3 b) => new Vector3(v.x + b.x, v.y + b.y, b.z);
 
   public static Vector2 AddX(this Vector2 v, int b) => new Vector2(v.x + b, v.y);
   public static Vector2 AddY(this Vector2 v, int b) => new Vector2(v.x, v.y + b);
@@ -121,8 +137,8 @@ public static class VectorExtensions {
 
 
 
-  public static Vector2 Set(this Vector2 v, int b) => new Vector2(b, b);
-  public static Vector2 Set(this Vector2 v, float b) => new Vector2(b, b);
+  // public static Vector2 Set(this Vector2 v, int b) => new Vector2(b, b);
+  // public static Vector2 Set(this Vector2 v, float b) => new Vector2(b, b);
 
   public static Vector2 SetX(this Vector2 v, int b) => new Vector2(b, v.y);
   public static Vector2 SetY(this Vector2 v, int b) => new Vector2(v.x, b);
@@ -131,40 +147,39 @@ public static class VectorExtensions {
   public static Vector2 SetY(this Vector2 v, float b) => new Vector2(v.x, b);
 
 
-  public static Vector2 SetXY(this Vector2 v, Vector2 b) => new Vector2(b.x, b.y);
-  public static Vector2 SetYX(this Vector2 v, Vector2 b) => new Vector2(b.y, b.x);
+  // public static Vector2 SetXY(this Vector2 v, Vector2 b) => new Vector2(b.x, b.y);
+  // public static Vector2 SetYX(this Vector2 v, Vector2 b) => new Vector2(b.y, b.x);
 
-  public static Vector2 SetXY(this Vector2 v, float2 b) => new Vector2(b.x, b.y);
-  public static Vector2 SetYX(this Vector2 v, float2 b) => new Vector2(b.y, b.x);
+  // public static Vector2 SetXY(this Vector2 v, float2 b) => new Vector2(b.x, b.y);
+  // public static Vector2 SetYX(this Vector2 v, float2 b) => new Vector2(b.y, b.x);
 
-  public static Vector2 SetXY(this Vector2 v, float b) => new Vector2(b, b);
-  public static Vector2 SetYX(this Vector2 v, float b) => new Vector2(b, b);
+  // public static Vector2 SetXY(this Vector2 v, float b) => new Vector2(b, b);
+  // public static Vector2 SetYX(this Vector2 v, float b) => new Vector2(b, b);
 
-  public static Vector2 SetXY(this Vector2 v, int b) => new Vector2(b, b);
-  public static Vector2 SetYX(this Vector2 v, int b) => new Vector2(b, b);
+  // public static Vector2 SetXY(this Vector2 v, int b) => new Vector2(b, b);
+  // public static Vector2 SetYX(this Vector2 v, int b) => new Vector2(b, b);
 
-  public static Vector2 SetXY(this Vector2 v, float b, float c) => new Vector2(b, c);
-  public static Vector2 SetYX(this Vector2 v, float b, float c) => new Vector2(b, c);
+  // public static Vector2 SetXY(this Vector2 v, float b, float c) => new Vector2(b, c);
+  // public static Vector2 SetYX(this Vector2 v, float b, float c) => new Vector2(b, c);
 
-  public static Vector2 SetXY(this Vector2 v, int b, int c) => new Vector2(b, c);
-  public static Vector2 SetYX(this Vector2 v, int b, int c) => new Vector2(b, c);
+  // public static Vector2 SetXY(this Vector2 v, int b, int c) => new Vector2(b, c);
+  // public static Vector2 SetYX(this Vector2 v, int b, int c) => new Vector2(b, c);
 
 
   // *********************** Vector3 *********************** //
 
-  public static bool LongerThan(this Vector3 v, Vector3 b) => v.sqrMagnitude > b.sqrMagnitude;
+  public static bool LongerThan(this Vector3 v, Vector3 smaller) => v.sqrMagnitude > smaller.sqrMagnitude;
 
 
   public static Vector3 SetLen(this Vector3 v, float length) => v.normalized * length;
-  public static Vector3 SetLenSafe(this Vector3 v, float length, Vector3 defaultValue) => math.normalize(v.x != 0 || v.y != 0 || v.z != 0 ? v : defaultValue) * length;
-  public static Vector3 SetLenSafer(this Vector3 v, float length, Vector3 defaultValue = default(Vector3)) => math.normalizesafe(v.x != 0 || v.y != 0 || v.z != 0 ? v : defaultValue) * length;
+  public static Vector3 SetLenSafe(this Vector3 v, float length, Vector3 defaultValue = default(Vector3)) => math.normalizesafe(v, defaultValue) * length;
   public static Vector3 AddLen(this Vector3 v, float addition) => v.normalized * (v.magnitude + addition);
   public static Vector3 AddLenSafe(this Vector3 v, float addition) => math.normalizesafe(v) * (v.magnitude + addition);
 
 
 
   public static Vector3 SetDir(this Vector3 v, Vector3 d) => d.normalized * v.magnitude;
-  public static Vector3 SetDirSafe(this Vector3 v, Vector3 d) => math.normalizesafe(d * math.length(v));
+  public static Vector3 SetDirSafe(this Vector3 v, Vector3 d, Vector3 defaultValue = default(Vector3)) => math.normalizesafe(d, defaultValue) * math.length(v);
 
 
 
@@ -175,7 +190,7 @@ public static class VectorExtensions {
   public static Vector2 zx(this Vector3 v) => new Vector2(v.z, v.x);
   public static Vector2 zy(this Vector3 v) => new Vector2(v.z, v.y);
 
-  public static Vector3 xyz(this Vector3 v) => new Vector3(v.x, v.y, v.z);
+  // public static Vector3 xyz(this Vector3 v) => new Vector3(v.x, v.y, v.z);
   public static Vector3 xzy(this Vector3 v) => new Vector3(v.x, v.z, v.y);
   public static Vector3 yzx(this Vector3 v) => new Vector3(v.y, v.z, v.x);
   public static Vector3 yxz(this Vector3 v) => new Vector3(v.y, v.x, v.z);
@@ -190,7 +205,7 @@ public static class VectorExtensions {
   public static Vector2 yo(this Vector3 v) => new Vector2(v.y, 0);
   public static Vector2 zo(this Vector3 v) => new Vector2(v.z, 0);
   public static Vector2 oz(this Vector3 v) => new Vector2(0, v.z);
-  public static Vector2 oo(this Vector3 v) => new Vector2(0, 0);
+  // public static Vector2 oo(this Vector3 v) => new Vector2(0, 0);
 
 
   public static Vector3 oxx(this Vector3 v) => new Vector3(0, v.x, v.x);
@@ -199,7 +214,7 @@ public static class VectorExtensions {
   public static Vector3 oxo(this Vector3 v) => new Vector3(0, v.x, 0);
   public static Vector3 oox(this Vector3 v) => new Vector3(0, 0, v.x);
   public static Vector3 xoo(this Vector3 v) => new Vector3(v.x, 0, 0);
-  public static Vector3 ooo(this Vector3 v) => new Vector3(0, 0, 0);
+  // public static Vector3 ooo(this Vector3 v) => new Vector3(0, 0, 0);
 
   public static Vector3 oyy(this Vector3 v) => new Vector3(0, v.y, v.y);
   public static Vector3 yoy(this Vector3 v) => new Vector3(v.y, 0, v.y);
@@ -241,6 +256,10 @@ public static class VectorExtensions {
 
   public static Vector3 Add(this Vector3 v, int b) => new Vector3(v.x + b, v.y + b, v.z + b);
   public static Vector3 Add(this Vector3 v, float b) => new Vector3(v.x + b, v.y + b, v.z + b);
+  public static Vector3 Add(this Vector3 v, Vector2 b) => new Vector3(v.x + b.x, v.y + b.y, v.z);
+  public static Vector3 Add(this Vector3 v, Vector3 b) => new Vector3(v.x + b.x, v.y + b.y, v.z + b.z);
+  public static Vector3 Add(this Vector3 v, float2 b) => new Vector3(v.x + b.x, v.y + b.y, v.z);
+  public static Vector3 Add(this Vector3 v, float3 b) => new Vector3(v.x + b.x, v.y + b.y, v.z + b.z);
 
 
   public static Vector3 AddX(this Vector3 v, int b) => new Vector3(v.x + b, v.y, v.z);
@@ -280,7 +299,7 @@ public static class VectorExtensions {
   public static Vector3 AddZX(this Vector3 v, int b) => new Vector3(v.x + b, v.y, v.z + b);
 
 
-  public static Vector3 AddXYZ(this Vector3 v, Vector3 b) => new Vector3(v.x + b.x, v.y + b.y, v.z + b.z);
+  // public static Vector3 AddXYZ(this Vector3 v, Vector3 b) => new Vector3(v.x + b.x, v.y + b.y, v.z + b.z);
   public static Vector3 AddXZY(this Vector3 v, Vector3 b) => new Vector3(v.x + b.x, v.y + b.z, v.z + b.y);
   public static Vector3 AddYZX(this Vector3 v, Vector3 b) => new Vector3(v.x + b.y, v.y + b.z, v.z + b.x);
   public static Vector3 AddYXZ(this Vector3 v, Vector3 b) => new Vector3(v.x + b.y, v.y + b.x, v.z + b.z);
@@ -354,45 +373,45 @@ public static class VectorExtensions {
   public static Vector3 SetZX(this Vector3 v, int b, int c) => new Vector3(b, v.y, c);
 
 
-  public static Vector3 SetXYZ(this Vector3 v, Vector3 b) => new Vector3(b.x, b.y, b.z);
-  public static Vector3 SetXZY(this Vector3 v, Vector3 b) => new Vector3(b.x, b.z, b.y);
-  public static Vector3 SetYZX(this Vector3 v, Vector3 b) => new Vector3(b.y, b.z, b.x);
-  public static Vector3 SetYXZ(this Vector3 v, Vector3 b) => new Vector3(b.y, b.x, b.z);
-  public static Vector3 SetZXY(this Vector3 v, Vector3 b) => new Vector3(b.z, b.x, b.y);
-  public static Vector3 SetZYX(this Vector3 v, Vector3 b) => new Vector3(b.z, b.y, b.x);
+  // public static Vector3 SetXYZ(this Vector3 v, Vector3 b) => new Vector3(b.x, b.y, b.z);
+  // public static Vector3 SetXZY(this Vector3 v, Vector3 b) => new Vector3(b.x, b.z, b.y);
+  // public static Vector3 SetYZX(this Vector3 v, Vector3 b) => new Vector3(b.y, b.z, b.x);
+  // public static Vector3 SetYXZ(this Vector3 v, Vector3 b) => new Vector3(b.y, b.x, b.z);
+  // public static Vector3 SetZXY(this Vector3 v, Vector3 b) => new Vector3(b.z, b.x, b.y);
+  // public static Vector3 SetZYX(this Vector3 v, Vector3 b) => new Vector3(b.z, b.y, b.x);
 
-  public static Vector3 SetXYZ(this Vector3 v, float3 b) => new Vector3(b.x, b.y, b.z);
-  public static Vector3 SetXZY(this Vector3 v, float3 b) => new Vector3(b.x, b.z, b.y);
-  public static Vector3 SetYZX(this Vector3 v, float3 b) => new Vector3(b.y, b.z, b.x);
-  public static Vector3 SetYXZ(this Vector3 v, float3 b) => new Vector3(b.y, b.x, b.z);
-  public static Vector3 SetZXY(this Vector3 v, float3 b) => new Vector3(b.z, b.x, b.y);
-  public static Vector3 SetZYX(this Vector3 v, float3 b) => new Vector3(b.z, b.y, b.x);
+  // public static Vector3 SetXYZ(this Vector3 v, float3 b) => new Vector3(b.x, b.y, b.z);
+  // public static Vector3 SetXZY(this Vector3 v, float3 b) => new Vector3(b.x, b.z, b.y);
+  // public static Vector3 SetYZX(this Vector3 v, float3 b) => new Vector3(b.y, b.z, b.x);
+  // public static Vector3 SetYXZ(this Vector3 v, float3 b) => new Vector3(b.y, b.x, b.z);
+  // public static Vector3 SetZXY(this Vector3 v, float3 b) => new Vector3(b.z, b.x, b.y);
+  // public static Vector3 SetZYX(this Vector3 v, float3 b) => new Vector3(b.z, b.y, b.x);
 
-  public static Vector3 SetXYZ(this Vector3 v, float b) => new Vector3(b, b, b);
-  public static Vector3 SetXZY(this Vector3 v, float b) => new Vector3(b, b, b);
-  public static Vector3 SetYZX(this Vector3 v, float b) => new Vector3(b, b, b);
-  public static Vector3 SetYXZ(this Vector3 v, float b) => new Vector3(b, b, b);
-  public static Vector3 SetZXY(this Vector3 v, float b) => new Vector3(b, b, b);
-  public static Vector3 SetZYX(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetXYZ(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetXZY(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetYZX(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetYXZ(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetZXY(this Vector3 v, float b) => new Vector3(b, b, b);
+  // public static Vector3 SetZYX(this Vector3 v, float b) => new Vector3(b, b, b);
 
-  public static Vector3 SetXYZ(this Vector3 v, int b) => new Vector3(b, b, b);
-  public static Vector3 SetXZY(this Vector3 v, int b) => new Vector3(b, b, b);
-  public static Vector3 SetYZX(this Vector3 v, int b) => new Vector3(b, b, b);
-  public static Vector3 SetYXZ(this Vector3 v, int b) => new Vector3(b, b, b);
-  public static Vector3 SetZXY(this Vector3 v, int b) => new Vector3(b, b, b);
-  public static Vector3 SetZYX(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetXYZ(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetXZY(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetYZX(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetYXZ(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetZXY(this Vector3 v, int b) => new Vector3(b, b, b);
+  // public static Vector3 SetZYX(this Vector3 v, int b) => new Vector3(b, b, b);
 
-  public static Vector3 SetXYZ(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
-  public static Vector3 SetXZY(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
-  public static Vector3 SetYZX(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
-  public static Vector3 SetYXZ(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
-  public static Vector3 SetZXY(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
-  public static Vector3 SetZYX(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetXYZ(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetXZY(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetYZX(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetYXZ(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetZXY(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
+  // public static Vector3 SetZYX(this Vector3 v, float b, float c, float d) => new Vector3(b, c, d);
 
-  public static Vector3 SetXYZ(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
-  public static Vector3 SetXZY(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
-  public static Vector3 SetYZX(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
-  public static Vector3 SetYXZ(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
-  public static Vector3 SetZXY(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
-  public static Vector3 SetZYX(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetXYZ(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetXZY(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetYZX(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetYXZ(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetZXY(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
+  // public static Vector3 SetZYX(this Vector3 v, int b, int c, int d) => new Vector3(b, c, d);
 }

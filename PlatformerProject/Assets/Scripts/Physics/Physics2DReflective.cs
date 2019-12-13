@@ -7,17 +7,16 @@ using MyBox;
 
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(Rigidbody2D))]
-public class Physics2DBouncyMove : MonoBehaviour {
+public class Physics2DReflective : MonoBehaviour {
 
   public float2 velocity;
   [Tooltip("Layers which are checked by the raycasts")]
   public ContactFilter2D layers;
-  // !!! Do this
   [Range(0, 360)]
   [Tooltip("Restrict reflection angle (world space). E.g. having the value 10 would round the reflection angle to nearest 10, 90 would make the direction be up,down,right or left. Leave at 0 to disable. It is recommended that this is a divisor of 360")]
   public float reflectionAngleRounding = 0;
   [Range(0, 360)]
-  [Tooltip("Literally just adds this value to the angle that is rounded and then substracts it")]
+  [Tooltip("Offsets the reflection angle rounding calculation. e.g. value 10 with rounding set to 20 would round to nearest ... -10, 10, 30, 50 ...")]
   public float reflectionAngleRoundingOffset = 0;
   [MinMaxRange(0, 90)]
   [Tooltip("Range of collision angles to reflect from. Smaller collisions cause sliding and bigger stop the object")]
@@ -54,6 +53,13 @@ public class Physics2DBouncyMove : MonoBehaviour {
 
   // Update is called once per frame
   void Update() {
+    if (reflectionAngleRounding != 0) {
+      var dir = Input.mousePosition.xy();
+      var dirAngle = dir.Angle();
+      var rounded = dirAngle.RoundToNearest(reflectionAngleRounding);
+      Debug.DrawLine(Vector2.zero, dir, Color.green);
+      Debug.DrawLine(Vector2.zero, dir.SetAngle(rounded), Color.red);
+    }
     if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     var endVel = velocity * Time.deltaTime;
 
@@ -68,9 +74,8 @@ public class Physics2DBouncyMove : MonoBehaviour {
       if (hit) {
         didHitSomething = true;
         var collisionPos = CollisionPos(hit, transform.position, endVel);
-        cast.TryMoveTo(collisionPos);
+        cast.TryTeleport(collisionPos);
         var angle = Vector2.Angle(velocity, hit.normal) - 90;
-        print(angle);
         if (angle > angles.max) {
           velocity = 0;
           break;
@@ -82,17 +87,20 @@ public class Physics2DBouncyMove : MonoBehaviour {
             velocity = Vector3.Project((Vector2)velocity, new Vector2(-hit.normal.y, hit.normal.x)).xy();
           break;
         }
-        velocity = Vector2.Reflect(velocity, hit.normal);
         endVel *= 1 - hit.fraction;
         if (math.lengthsq(endVel) < minIterationVelocitySQ)
           break;
 
         endVel = Vector2.Reflect(endVel, hit.normal);
+        velocity = Vector2.Reflect(velocity, hit.normal);
         if (reflectionAngleRounding != 0) {
-
+          var dirAngle = endVel.Angle();
+          var rounded = dirAngle.RoundToNearest(reflectionAngleRounding);
+          endVel = endVel.SetAngle(rounded);
+          velocity = velocity.SetAngle(rounded);
         }
       } else {
-        cast.TryMoveTo(transform.position.AddXY(endVel));
+        cast.TryTeleport(transform.position.Add(endVel));
         break;
       }
     }

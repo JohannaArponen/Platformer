@@ -13,10 +13,12 @@ public class Physics2DCharacter : MonoBehaviour {
   [ConditionalField(nameof(animator))]
   [Tooltip("Speed of move animation is multiplied by this")]
   public float animationSpeedMultiplier = 1;
-  [Tooltip("Flip the first found sprite when moving left")]
+  [Tooltip("Flip the sprites when moving left")]
   public bool flipSprite = true;
+  public bool flipWeapon = true;
   private bool flip = false;
-  [Tooltip("By default only the first SpriteRenderer found by GetComponentsInChildren")]
+  [ConditionalField(nameof(flipSprite))]
+  [Tooltip("By default only the first SpriteRenderer found by GetComponentInChildren")]
   public SpriteRenderer[] sprites = new SpriteRenderer[0];
   [Tooltip("Default gravity")]
   public float defaultGravity = 1000f;
@@ -243,7 +245,7 @@ public class Physics2DCharacter : MonoBehaviour {
             var downHit = cast.Cast(downPos, dir);
             if (downHit && Vector2.Angle(Vector2.up, downHit.normal) < maxAngle) {
               var collisionPos = CollisionPos(downHit, downPos, dir);
-              cast.TryMoveTo(collisionPos);
+              cast.TryTeleport(collisionPos);
               return;
             }
           }
@@ -264,9 +266,9 @@ public class Physics2DCharacter : MonoBehaviour {
 
 
 
-        if (!cast.TryMoveTo(colPos))
+        if (!cast.TryTeleport(colPos))
           if (i != 0 && onGround && (contactAngle % 90 < nearAxisAngleOffsetRange || contactAngle % 90 > 90 - nearAxisAngleOffsetRange))
-            cast.TryMoveTo(colPos + hit.normal * nearAxisAngleOffset);
+            cast.TryTeleport(colPos + hit.normal * nearAxisAngleOffset);
 
 
 
@@ -277,7 +279,7 @@ public class Physics2DCharacter : MonoBehaviour {
       } else {
 
         // Free move
-        cast.TryMoveTo(transform.position.AddXY(endVel));
+        cast.TryTeleport(transform.position.AddXY(endVel));
 
         // Down slopes
         if (endVel.x != 0 && onGround && !onSlope) {
@@ -287,7 +289,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
           if (downHit && (math.abs(downHit.normal.x) < 0.00001f || (endVel.x < 0 == downHit.normal.x < 0)) && Vector2.Angle(Vector2.up, downHit.normal) <= maxAngle) {
             var colPos = CollisionPos(downHit, transform.position, dir);
-            cast.TryMoveTo(colPos);
+            cast.TryTeleport(colPos);
           }
         }
         break;

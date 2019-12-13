@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Mathematics;
 
 [RequireComponent(typeof(Physics2DCharacter))]
-[RequireComponent(typeof(Physics2DBouncyMove))]
+[RequireComponent(typeof(Physics2DReflective))]
 public class RocketBoost : MonoBehaviour {
 
   public float channelTime = 1f;
@@ -46,12 +46,12 @@ public class RocketBoost : MonoBehaviour {
   private bool hasHitSomething;
 
   private Physics2DCharacter charPhysics;
-  private Physics2DBouncyMove bouncy;
+  private Physics2DReflective bouncy;
 
   // Start is called before the first frame update
   void Start() {
     charPhysics = GetComponent<Physics2DCharacter>();
-    bouncy = GetComponent<Physics2DBouncyMove>();
+    bouncy = GetComponent<Physics2DReflective>();
     bouncy.enabled = false;
     if (weapon == null) weapon = GetComponentInChildren<Weapon>();
     if (weapon == null) throw new UnityException("No weapon found in children. A weapon is required either in the children or manually set in the inspector");
@@ -80,7 +80,7 @@ public class RocketBoost : MonoBehaviour {
         }
       }
       var speed = startSpeed + speedCurve.Evaluate((Time.time - boostStartTime) / duration) * (endSpeed - startSpeed);
-      bouncy.velocity = bouncy.velocity.SetLenSafer(speed);
+      bouncy.velocity = bouncy.velocity.SetLenSafe(speed);
       return;
     } else {
       if (Input.GetKey(weapon.key)) {

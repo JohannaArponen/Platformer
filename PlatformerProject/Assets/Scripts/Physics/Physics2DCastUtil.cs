@@ -16,7 +16,7 @@ public class Physics2DCastUtil {
 
   public RaycastHit2D Collides(Vector2 pos) => Cast(pos, Vector2.zero);
 
-  public bool TryMoveTo(Vector2 pos) {
+  public bool TryTeleport(Vector2 pos) {
     var hit = Cast(pos, Vector2.zero);
     if (hit)
       return false;
