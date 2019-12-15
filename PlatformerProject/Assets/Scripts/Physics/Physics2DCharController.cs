@@ -7,7 +7,7 @@ using Unity.Mathematics;
 public class Physics2DCharController : MonoBehaviour {
   [Tooltip("Units per second")]
   public float speed;
-  [Tooltip("Allow increasing movement speed only to the value of Speed (E.G. if velocity would already give more speed)")]
+  [Tooltip("Don't increase velocity of object beyond the value of Speed")]
   public bool limitSpeedIncrease = true;
   [Tooltip("Take input from input horizontal axis. Left and right keys still work with this enabled")]
   public bool useHorizontalAxisMove = true;
@@ -110,10 +110,10 @@ public class Physics2DCharController : MonoBehaviour {
       }
       if (Input.GetKey(jumpKey))
         dir.y += 1;
+    }
 
-      if (useHorizontalAxisMove) {
-        dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
-      }
+    if (useHorizontalAxisMove) {
+      dir.x = (smoothing ? Input.GetAxis("Horizontal") : Input.GetAxisRaw("Horizontal"));
     }
 
     if (Input.GetKey(leftKey))

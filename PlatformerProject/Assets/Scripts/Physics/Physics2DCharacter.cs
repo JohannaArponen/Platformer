@@ -13,13 +13,9 @@ public class Physics2DCharacter : MonoBehaviour {
   [ConditionalField(nameof(animator))]
   [Tooltip("Speed of move animation is multiplied by this")]
   public float animationSpeedMultiplier = 1;
-  [Tooltip("Flip the sprites when moving left")]
-  public bool flipSprite = true;
-  public bool flipWeapon = true;
-  private bool flip = false;
-  [ConditionalField(nameof(flipSprite))]
-  [Tooltip("By default only the first SpriteRenderer found by GetComponentInChildren")]
-  public SpriteRenderer[] sprites = new SpriteRenderer[0];
+  [Tooltip("Multiplies the scale by -1 when changing direction")]
+  public bool flip = true;
+  private bool flipped = false;
   [Tooltip("Default gravity")]
   public float defaultGravity = 1000f;
   [PositiveValueOnly]
@@ -73,6 +69,8 @@ public class Physics2DCharacter : MonoBehaviour {
 
   /// <summary> Block the next physics update done by this component </summary>
   [HideInInspector] public bool ignoreNextPhysicsUpdate = false;
+  /// <summary> Block the next gravity (velocity.y) update </summary>
+  [HideInInspector] public bool ignoreNextGravity = false;
 
   [HideInInspector] public RaycastHit2D onGround, onCeiling, onRight, onLeft;
   [HideInInspector] public bool onSlopeRight, onSlopeLeft, onSlope;
@@ -94,11 +92,6 @@ public class Physics2DCharacter : MonoBehaviour {
     col = GetComponent<BoxCollider2D>();
     rb = GetComponent<Rigidbody2D>();
     gravity = defaultGravity;
-    if (sprites.Length == 0) {
-      var sr = GetComponentInChildren<SpriteRenderer>();
-      if (sr == null) throw new UnityException("No SpriteRenderer defined and none found in children");
-      sprites = new SpriteRenderer[1] { sr };
-    }
   }
 
 
@@ -139,13 +132,12 @@ public class Physics2DCharacter : MonoBehaviour {
     onLeft = cast.Cast(transform.position, Vector2.left * dirCollisionTestLength);
 
     if (onGround) {
-      slopeAngle = Vector2.Angle(Vector2.up, onGround.normal);
+      slopeAngle = onGround.normal.Angle();
       onSlopeRight = !onSlopeLeft && slopeAngle > maxAngle && onGround.normal.x < 0;
       onSlopeLeft = slopeAngle > maxAngle && onGround.normal.x >= 0;
       onSlope = onSlopeLeft || onSlopeRight;
 
       if (!onSlope) {
-        velocity = 0;
         if (moveWithGround) {
           colPrevTransform = onGround.collider.gameObject.transform.Save();
           validPrevcollider = true;
@@ -171,6 +163,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
 
   bool MoveWithGround() {
+    var a = new float2(1, 1);
     var colGo = onGround.collider.gameObject;
     if (colGo.isStatic) return false; // Moving or deactivating static things breaks things
     colGo.SetActive(false);
@@ -198,10 +191,13 @@ public class Physics2DCharacter : MonoBehaviour {
 
   void Physics() {
     if (ignoreNextPhysicsUpdate) return;
+
     rb.useFullKinematicContacts = true;
     float multiplier = math.max(0f, 1f - drag * Time.deltaTime);
     velocity *= multiplier;
-    velocity.y -= gravity * Time.deltaTime;
+    if (!ignoreNextGravity)
+      velocity.y -= gravity * Time.deltaTime;
+    ignoreNextGravity = false;
 
     if (cast.Collides(transform.position)) {
       Debug.LogWarning("Physics2D Rigidbody was inside a collider");
@@ -210,23 +206,21 @@ public class Physics2DCharacter : MonoBehaviour {
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
 
-    var forceSteps = false;
     for (int i = 0; i < maxPhysicsIters; i++) {
       var hit = cast.Cast(transform.position, endVel);
       if (hit && debug.hitNormal)
         Debug.DrawRay(hit.point, hit.normal, debug.hitNormal.color, 0);
       if (hit) {
         // Height steps, stairs etc.
-        var contactAngle = Vector2.Angle(Vector2.up, hit.normal);
-        bool isSteep = contactAngle > maxAngle;
-        if (forceSteps || ((onGround || airHeightStep) && isSteep) && Vector2.Angle(Vector2.up, endVel) < 135) {
-          forceSteps = false;
+        var hitAngle = hit.normal.Angle();
+        bool isSteep = hitAngle > maxAngle;
+        if (((onGround || airHeightStep) && isSteep) && endVel.Angle() < 135) {
           var heighStep = maxHeightStep * 2;
           for (int j = 0; j < maxHeightSteps.y; j++) {
             heighStep /= 2;
             var pos = transform.position.xy().AddY(heighStep);
 
-            bool breakOuter = false;
+            bool fullBreak = false;
             RaycastHit2D horHit;
             float horStep = endVel.x * 2;
             for (int k = 0; k < maxHeightSteps.x; k++) {
@@ -235,83 +229,87 @@ public class Physics2DCharacter : MonoBehaviour {
               if (!horHit)
                 break;
               else if (k == maxHeightSteps.x - 1) {
-                breakOuter = true;
+                fullBreak = true;
                 break;
               }
             }
-            if (breakOuter) break;
+            if (fullBreak) break;
             var dir = new Vector2(0, -heighStep);
             var downPos = pos.AddX(horStep);
             var downHit = cast.Cast(downPos, dir);
-            if (downHit && Vector2.Angle(Vector2.up, downHit.normal) < maxAngle) {
+            if (downHit && downHit.normal.Angle() < maxAngle) {
               var collisionPos = CollisionPos(downHit, downPos, dir);
-              cast.TryTeleport(collisionPos);
+              cast.AssertTeleport(collisionPos);
               return;
             }
           }
         }
 
+        // Must be calculated here since endVel.y may be set to 0
         var colPos = CollisionPos(hit, transform.position, endVel);
 
-
         // Handle slopes affecting velocity and stuff
-        if (!isSteep)
+        if (!isSteep) {
+          velocity = 0;
           endVel.y = 0;
-        if (isSteep && contactAngle < 90)
+        } else if (hitAngle < 90)
           velocity *= math.pow((float2)hit.normal * -1 + 1, steepVelocityProjectPower);
-        else if (!onGround && velocity.y < 0 && contactAngle > 90)
+        else if (!onGround && velocity.y < 0 && hitAngle > 90)
           velocity.x *= math.abs(hit.normal.x) * -1 + 1;
         else
           velocity *= math.abs(hit.normal) * -1 + 1;
 
 
 
-        if (!cast.TryTeleport(colPos))
-          if (i != 0 && onGround && (contactAngle % 90 < nearAxisAngleOffsetRange || contactAngle % 90 > 90 - nearAxisAngleOffsetRange))
+        if (!cast.TryTeleport(colPos)) {
+          if (i != 0 && onGround && (hitAngle % 90 < nearAxisAngleOffsetRange || hitAngle % 90 > 90 - nearAxisAngleOffsetRange)) {
             cast.TryTeleport(colPos + hit.normal * nearAxisAngleOffset);
+            break;
+          }
+        }
 
 
 
         // Project velocity along normal of collision
-        if (!onGround || contactAngle >= 90 || contactAngle < maxAngle || endVel.x == 0 || hit.normal.x >= 0 == endVel.x >= 0) // Fixes going towards slopes causing jitter
+        if (!onGround || hitAngle >= 90 || hitAngle < maxAngle || endVel.x == 0 || hit.normal.x >= 0 == endVel.x >= 0) // Checks Fix going towards slopes causing jitter
           endVel = Vector3.Project((Vector2)endVel, new Vector2(-hit.normal.y, hit.normal.x)).xy();
 
       } else {
 
         // Free move
-        cast.TryTeleport(transform.position.AddXY(endVel));
+        if (!cast.AssertTeleport(transform.position.AddXY(endVel))) break;
 
         // Down slopes
         if (endVel.x != 0 && onGround && !onSlope) {
           // !!! PROJECT ALONG GROUND NORMAL INSTEAD
-          var dir = Vector2.down * (endVel.x * math.tan(maxAngle * Mathf.Deg2Rad) + maxHeightStep);
+
+          var dir = Vector2.down * (endVel.x * math.tan(math.radians(maxAngle)) + maxHeightStep);
           var downHit = cast.Cast(transform.position, dir);
 
-          if (downHit && (math.abs(downHit.normal.x) < 0.00001f || (endVel.x < 0 == downHit.normal.x < 0)) && Vector2.Angle(Vector2.up, downHit.normal) <= maxAngle) {
+          if (downHit && (/* math.abs(downHit.normal.x) < 0.00001f || */ (endVel.x < 0 == downHit.normal.x < 0)) && downHit.normal.Angle() <= maxAngle) {
             var colPos = CollisionPos(downHit, transform.position, dir);
-            cast.TryTeleport(colPos);
+            if (cast.AssertTeleport(colPos))
+              velocity.y = 0;
+          } else {
+            print("wtf");
           }
         }
         break;
       }
-      if (endVel.Equals(Vector2.one)) {
+      if (endVel.Equals(Vector2.zero))
         break;
-      }
     }
 
-    if (flipSprite && endVel.x != 0) {
+    // Flip some shit
+    if (flip && endVel.x != 0) {
       if (endVel.x > 0) {
-        if (flip) {
-          foreach (var sr in sprites) {
-            sr.flipX = false;
-            flip = !flip;
-          }
+        if (flipped) {
+          transform.localScale += new Vector3(transform.localScale.x * -2, 0, 0);
+          flipped = !flipped;
         }
-      } else if (!flip) {
-        foreach (var sr in sprites) {
-          sr.flipX = true;
-          flip = !flip;
-        }
+      } else if (!flipped) {
+        transform.localScale += new Vector3(transform.localScale.x * -2, 0, 0);
+        flipped = !flipped;
       }
     }
   }
@@ -328,14 +326,15 @@ public class Physics2DCharacter : MonoBehaviour {
       var down = new Vector3(min.x + (max.x - min.x) / 2, min.y);
       var right = new Vector3(max.x, min.y + (max.y - min.y) / 2);
       var left = new Vector3(min.x, min.y + (max.y - min.y) / 2);
+      var center = new Vector3(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2);
       Gizmos.color = debug.showDirectionalCollisions.color * (onLeft ? 1 : 0.1f);
-      Gizmos.DrawLine(transform.position, left + Vector3.left * dirCollisionTestLength); // left
+      Gizmos.DrawLine(center, left + Vector3.left * dirCollisionTestLength); // left
       Gizmos.color = debug.showDirectionalCollisions.color * (onRight ? 1 : 0.1f);
-      Gizmos.DrawLine(transform.position, right + Vector3.right * dirCollisionTestLength); // right
+      Gizmos.DrawLine(center, right + Vector3.right * dirCollisionTestLength); // right
       Gizmos.color = debug.showDirectionalCollisions.color * (onGround ? 1 : 0.1f);
-      Gizmos.DrawLine(transform.position, down + Vector3.down * dirCollisionTestLength); // down
+      Gizmos.DrawLine(center, down + Vector3.down * dirCollisionTestLength); // down
       Gizmos.color = debug.showDirectionalCollisions.color * (onCeiling ? 1 : 0.1f);
-      Gizmos.DrawLine(transform.position, top + Vector3.up * dirCollisionTestLength); // up
+      Gizmos.DrawLine(center, top + Vector3.up * dirCollisionTestLength); // up
     }
   }
 

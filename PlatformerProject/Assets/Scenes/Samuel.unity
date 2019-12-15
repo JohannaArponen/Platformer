@@ -6367,6 +6367,11 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 1875525921}
+    - target: {fileID: 9054015657850244417, guid: 1bda266d67fe44e4c9211094dc7e556c,
+        type: 3}
+      propertyPath: offset.y
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1bda266d67fe44e4c9211094dc7e556c, type: 3}
 --- !u!4 &1875525921 stripped
@@ -6661,6 +6666,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6890681697967849402, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: useVerticalKeysForUserDirection
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0fb479a613e72054194f47847dc0f751, type: 3}

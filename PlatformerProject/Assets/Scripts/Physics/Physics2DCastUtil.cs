@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Physics2DCastUtil {
@@ -16,6 +17,11 @@ public class Physics2DCastUtil {
 
   public RaycastHit2D Collides(Vector2 pos) => Cast(pos, Vector2.zero);
 
+  public bool AssertTeleport(Vector2 pos, string message = "Could not teleport to position:") {
+    var res = TryTeleport(pos);
+    if (!res) Debug.LogWarning(message, transform.gameObject);
+    return res;
+  }
   public bool TryTeleport(Vector2 pos) {
     var hit = Cast(pos, Vector2.zero);
     if (hit)
@@ -31,6 +37,7 @@ public class Physics2DCastUtil {
     return true;
   }
 
+  public RaycastHit2D Cast(Vector2 dir) => Cast(transform.position, dir);
   public RaycastHit2D Cast(Vector2 start, Vector2 dir) {
     Vector2 normalized = dir.x == 0 && dir.y == 0 ? Vector2.right : dir.normalized;
     float length = dir.magnitude;

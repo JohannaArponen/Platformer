@@ -282,9 +282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 522968061}
   animationSpeedMultiplier: 0.18
-  flipSprite: 1
-  flipWeapon: 1
-  sprites: []
+  flip: 1
   defaultGravity: 100
   drag: 0.05
   maxAngle: 45.1
@@ -371,7 +369,7 @@ MonoBehaviour:
   useVerticalAxisMovement: 0
   upKey: 0
   downKey: 0
-  useVerticalAxisJump: 1
+  useVerticalAxisJump: 0
   jumpKey: 32
   jumpStrength: 25
   useVerticalAxisCrouch: 1

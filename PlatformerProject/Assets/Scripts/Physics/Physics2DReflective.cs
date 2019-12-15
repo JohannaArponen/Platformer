@@ -55,7 +55,7 @@ public class Physics2DReflective : MonoBehaviour {
   void Update() {
     if (reflectionAngleRounding != 0) {
       var dir = Input.mousePosition.xy();
-      var dirAngle = dir.Angle();
+      var dirAngle = dir.SignedAngle();
       var rounded = dirAngle.RoundToNearest(reflectionAngleRounding);
       Debug.DrawLine(Vector2.zero, dir, Color.green);
       Debug.DrawLine(Vector2.zero, dir.SetAngle(rounded), Color.red);
@@ -94,7 +94,7 @@ public class Physics2DReflective : MonoBehaviour {
         endVel = Vector2.Reflect(endVel, hit.normal);
         velocity = Vector2.Reflect(velocity, hit.normal);
         if (reflectionAngleRounding != 0) {
-          var dirAngle = endVel.Angle();
+          var dirAngle = endVel.SignedAngle();
           var rounded = dirAngle.RoundToNearest(reflectionAngleRounding);
           endVel = endVel.SetAngle(rounded);
           velocity = velocity.SetAngle(rounded);
