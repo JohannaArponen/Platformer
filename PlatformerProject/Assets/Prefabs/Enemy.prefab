@@ -104,8 +104,8 @@ MonoBehaviour:
   animator: {fileID: 0}
   key: 0
   damage: 1
-  lowAngle: 45
-  topAngle: 135
+  minAngle: 45
+  maxAngle: 135
   angleCurve:
     serializedVersion: 2
     m_Curve: []
@@ -295,6 +295,7 @@ MonoBehaviour:
   _invulnerabilityDuration: 1
   _activeDistanceFromView: 2
   destroyTime: 3
+  pushMultiplier: 1
 --- !u!114 &5483972488431013620
 MonoBehaviour:
   m_ObjectHideFlags: 0

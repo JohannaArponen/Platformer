@@ -10,9 +10,11 @@ public class Weapon : MonoBehaviour {
   public Animator animator;
   public KeyCode key = KeyCode.X;
   public float damage = 1;
-  public float lowAngle = 45;
-  public float topAngle = 135;
-  private float angleDif { get => topAngle - lowAngle; }
+  [Tooltip("The minimum value which " + nameof(angleCurve) + " outputs at 0 time")]
+  public float minAngle = 45;
+  [Tooltip("The maximum value which " + nameof(angleCurve) + " outputs at 1 time")]
+  public float maxAngle = 135;
+  private float angleDif { get => maxAngle - minAngle; }
   public AnimationCurve angleCurve = new AnimationCurve();
   public float duration = 0.25f;
   public float cooldown = 0.2f;
@@ -30,8 +32,8 @@ public class Weapon : MonoBehaviour {
   /// <summary> this is 0 at the start of swing and 1 at the end of swing </summary> 
   public float time { get => _time; private set => _time = value; }
   private float _time;
+  public Transform parent { get => transform.parent; }
 
-  private Transform parent { get => transform.parent; }
   private float attackStart = 0;
   private bool attacking = false;
   private bool doAttack = false;
@@ -44,7 +46,11 @@ public class Weapon : MonoBehaviour {
   /// <summary> Calculates the collision speed in units/sec at a specific distance from the pivot point. The pos parameter is only used for retrieving the distance </summary>
   public float GetHitSpeed(Vector3 pos, float time = -1) => GetHitSpeed(Vector3.Distance(parent.transform.position, pos), time);
   /// <summary> Calculates the collision angle at the specified point </summary>
-  public float GetHitAngle(Vector3 pos, float time = -1) => (pos - parent.transform.position).xy().SignedAngle() + (GetChangeAmount(time) < 0 == lowAngle < topAngle ? 90 : -90);
+  public float GetHitAngle(Vector3 pos, float time = -1) => (pos - parent.transform.position).xy().SignedAngle() + (GetChangeAmount(time) < 0 ? 90 : -90);
+  /// <summary> Returns the current angle of parent </summary>
+  public float GetAngle() => parent.transform.rotation.eulerAngles.z;
+  /// <summary> Returns the current angle of parent and adds 90 degrees towards swing direction  </summary>
+  public float GetDirectionAngle(float time = -1) => parent.transform.rotation.eulerAngles.z + (GetChangeAmount(time) < 0 ? 90 : -90);
   /// <summary> Returns the specified world space position relative to the pivot point </summary>
   public Vector3 GetPosRelativeToPivot(Vector3 pos) => pos - parent.transform.position;
 
@@ -89,7 +95,7 @@ public class Weapon : MonoBehaviour {
       if (animator != null) { animator.SetFloat("Attack", time); }
       if (time <= 1) {
         var curved = angleCurve.Evaluate((Time.time - attackStart) / duration);
-        var angle = lowAngle + (angleDif) * curved;
+        var angle = minAngle + (angleDif) * curved;
         parent.localRotation = Quaternion.AngleAxis(angle, Vector3.forward);
       } else {
         attacking = false;
@@ -97,7 +103,7 @@ public class Weapon : MonoBehaviour {
           Enable(comp, false);
         foreach (var comp in toDisable)
           Disable(comp, false);
-        parent.localRotation = Quaternion.AngleAxis(topAngle, Vector3.forward);
+        parent.localRotation = Quaternion.AngleAxis(maxAngle, Vector3.forward);
       }
     } else {
 
@@ -117,7 +123,7 @@ public class Weapon : MonoBehaviour {
           Enable(comp);
 
         if (animator != null) animator.SetFloat("Attack", 0.0001f);
-        parent.localRotation = Quaternion.AngleAxis(lowAngle, Vector3.forward);
+        parent.localRotation = Quaternion.AngleAxis(minAngle, Vector3.forward);
       }
     }
   }

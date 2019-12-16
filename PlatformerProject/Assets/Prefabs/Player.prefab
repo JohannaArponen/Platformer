@@ -173,8 +173,8 @@ MonoBehaviour:
   animator: {fileID: 522968061}
   key: 304
   damage: 1
-  lowAngle: 0
-  topAngle: 320
+  minAngle: 45
+  maxAngle: 135
   angleCurve:
     serializedVersion: 2
     m_Curve:

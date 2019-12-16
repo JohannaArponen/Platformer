@@ -11,6 +11,9 @@ public abstract class Enemy : MonoBehaviour {
   protected abstract float collisionDamage { get; set; }
   protected abstract float invulnerabilityDuration { get; set; }
   protected abstract float activeDistanceFromView { get; set; }
+
+  protected ContactFilter2D contactFilter;
+
   private float invulnerabilityStart = float.NegativeInfinity;
 
   private bool _activated = false;
@@ -36,6 +39,7 @@ public abstract class Enemy : MonoBehaviour {
     cam = Camera.main;
     sr = GetComponentInChildren<SpriteRenderer>();
     col = GetComponentInChildren<Collider2D>();
+    contactFilter = new ContactFilter2D();
     OnCreate();
     Updaterect();
     inView = GetSpawnRect().Overlaps(rect);
@@ -74,30 +78,20 @@ public abstract class Enemy : MonoBehaviour {
     return new Rect(topLeft, bottomRight - topLeft);
   }
 
-  public void OnCollisionEnter2D(Collision2D collision) {
-    if (Time.time > invulnerabilityStart + invulnerabilityDuration) {
-      var weapon = collision.collider.gameObject.GetComponent<Weapon>();
-      if (weapon != null) {
-        invulnerabilityStart = Time.time;
-        OnHit(weapon.damage, collision, weapon);
-      }
-    }
-  }
-
 
   // On creation
   virtual protected void OnCreate() {
 
   }
   // On hit duh. weapon may be null
-  virtual protected void OnHit(float damage, Collision2D col, Weapon weapon) {
+  virtual protected void OnHit(float damage, Collider2D col, Weapon weapon) {
     health -= damage;
     if (health <= 0) {
       OnKill(damage, col, weapon);
     }
   }
   // When killed. weapon may be null. col may be null
-  virtual protected void OnKill(float damage, Collision2D col, Weapon weapon) {
+  virtual protected void OnKill(float damage, Collider2D col, Weapon weapon) {
 
   }
   // When activated
@@ -110,7 +104,18 @@ public abstract class Enemy : MonoBehaviour {
   }
   // Just like Update but only called when activated
   virtual protected void EnemyUpdate() {
-
+    if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
+      var results = new List<Collider2D>();
+      if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
+        foreach (var result in results) {
+          var weapon = result.gameObject.GetComponent<Weapon>();
+          if (weapon != null) {
+            invulnerabilityStart = Time.time;
+            OnHit(weapon.damage, result, weapon);
+          }
+        }
+      }
+    }
   }
   // When enters visible area
   virtual protected void OnEnterView() {
