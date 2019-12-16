@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public abstract class Enemy : MonoBehaviour {
 
+  protected abstract bool kill { get; set; }
   protected abstract float health { get; set; }
   protected abstract float damage { get; set; }
   protected abstract float collisionDamage { get; set; }
@@ -19,6 +19,7 @@ public abstract class Enemy : MonoBehaviour {
   private bool inView;
   private Rect rect;
   private SpriteRenderer sr;
+  private Collider2D col;
 
   public bool activated {
     get => _activated; set {
@@ -33,7 +34,8 @@ public abstract class Enemy : MonoBehaviour {
 
   public void Start() {
     cam = Camera.main;
-    sr = GetComponent<SpriteRenderer>();
+    sr = GetComponentInChildren<SpriteRenderer>();
+    col = GetComponentInChildren<Collider2D>();
     OnCreate();
     Updaterect();
     inView = GetSpawnRect().Overlaps(rect);
@@ -58,6 +60,7 @@ public abstract class Enemy : MonoBehaviour {
   }
 
   protected void Updaterect() {
+    if (sr == null) rect = new Rect(col.bounds.min.xy(), col.bounds.size.xy());
     rect = new Rect(sr.bounds.min.xy(), sr.bounds.size.xy());
   }
 
@@ -66,6 +69,7 @@ public abstract class Enemy : MonoBehaviour {
     var bottomRight = cam.ViewportToWorldPoint(Vector2.one).xy().AddXY(activeDistanceFromView);
     Updaterect();
     MyUtil.DrawBoxXY(topLeft, bottomRight - topLeft, Color.green);
+    if (sr == null) MyUtil.DrawBoxXY(col.bounds.min.xy(), col.bounds.size.xy(), Color.cyan);
     MyUtil.DrawBoxXY(sr.bounds.min.xy(), sr.bounds.size.xy(), Color.cyan);
     return new Rect(topLeft, bottomRight - topLeft);
   }
@@ -82,17 +86,38 @@ public abstract class Enemy : MonoBehaviour {
 
 
   // On creation
-  protected abstract void OnCreate();
+  virtual protected void OnCreate() {
+
+  }
   // On hit duh
-  protected abstract void OnHit(float damage, Collision2D col);
+  virtual protected void OnHit(float damage, Collision2D col) {
+    health -= damage;
+    if (health <= 0) {
+      OnKill();
+    }
+  }
+  // When killed
+  virtual protected void OnKill() {
+
+  }
   // When activated
-  protected abstract void OnActivate();
+  virtual protected void OnActivate() {
+
+  }
   // When deactivated
-  protected abstract void OnDeactivate();
+  virtual protected void OnDeactivate() {
+
+  }
   // Just like Update but only called when activated
-  protected abstract void EnemyUpdate();
+  virtual protected void EnemyUpdate() {
+
+  }
   // When enters visible area
-  protected abstract void OnEnterView();
+  virtual protected void OnEnterView() {
+
+  }
   // When exits visible area
-  protected abstract void OnExitView();
+  virtual protected void OnExitView() {
+
+  }
 }

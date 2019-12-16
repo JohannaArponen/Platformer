@@ -9,7 +9,7 @@ public class Physics2DCastUtil {
   public Rigidbody2D rb;
   public ContactFilter2D layers;
 
-  public Physics2DCastUtil(Transform transform, Rigidbody2D rb, ContactFilter2D layers) {
+  public Physics2DCastUtil(Transform transform, Rigidbody2D rb, ref ContactFilter2D layers) {
     this.transform = transform;
     this.rb = rb;
     this.layers = layers;

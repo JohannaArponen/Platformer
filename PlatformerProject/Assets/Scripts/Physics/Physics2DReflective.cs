@@ -60,7 +60,7 @@ public class Physics2DReflective : MonoBehaviour {
       Debug.DrawLine(Vector2.zero, dir, Color.green);
       Debug.DrawLine(Vector2.zero, dir.SetAngle(rounded), Color.red);
     }
-    if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
+    if (cast == null) cast = new Physics2DCastUtil(transform, rb, ref layers);
     var endVel = velocity * Time.deltaTime;
 
     if (cast.Collides(transform.position)) {

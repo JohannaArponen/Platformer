@@ -178,9 +178,9 @@ MonoBehaviour:
   duration: 0.75
   cooldown: 0.2
   col: {fileID: 1586940944351206573}
-  disableBehaviours:
+  disableObjects:
   - {fileID: 6890681697967849402}
-  enableBehaviours:
+  enableObjects:
   - {fileID: 1586940944351206573}
   disallowAttack: 0
 --- !u!1 &6644812756781074757
@@ -214,7 +214,7 @@ Transform:
   m_GameObject: {fileID: 6644812756781074757}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -11.51, y: 5.91, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4684176171626746912}
   - {fileID: 2212887960708250883}
@@ -327,6 +327,7 @@ MonoBehaviour:
     x: 0
     y: 0
   ignoreNextPhysicsUpdate: 0
+  ignoreNextGravity: 0
   onSlopeRight: 0
   onSlopeLeft: 0
   onSlope: 0
@@ -365,7 +366,7 @@ MonoBehaviour:
   leftKey: 0
   rightKey: 0
   moveVertically: 0
-  useVerticalKeysForUserDirection: 0
+  useVerticalKeysForUserDirection: 1
   useVerticalAxisMovement: 0
   upKey: 0
   downKey: 0
