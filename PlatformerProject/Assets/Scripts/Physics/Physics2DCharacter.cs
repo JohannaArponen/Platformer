@@ -35,9 +35,12 @@ public class Physics2DCharacter : MonoBehaviour {
   public bool ignoreChildColliders = true;
   [Tooltip("Maximum amount of iterations done to check for walkable obstacles (horizontal, vertical). Each iteration the value is halved")]
   public float2 maxHeightSteps = 1;
+
+  public ContactFilter2D layers { get => _layers; set { _layers = value; if (cast != null) cast.layers = value; } }
+  [SerializeField]
   [Tooltip("Layers which are checked by the raycasts")]
-  // !!! layers is a struct for some reason so we need to find a way to edit the value and also affect the physucs2dcastutil module
-  public ContactFilter2D layers;
+  private ContactFilter2D _layers;
+
   [PositiveValueOnly]
   [Tooltip("Maximum physics box raycasts. When a raycast collides, a new raycast is done along its vector")]
   public int maxPhysicsIters = 3;
@@ -98,7 +101,7 @@ public class Physics2DCharacter : MonoBehaviour {
 
 
   void LateUpdate() {
-    if (cast == null) cast = new Physics2DCastUtil(transform, rb, ref layers);
+    if (cast == null) cast = new Physics2DCastUtil(transform, rb, layers);
     List<Transform> disabledChildren = new List<Transform>();
     if (ignoreChildColliders) {
       foreach (Transform child in transform) {

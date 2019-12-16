@@ -6,6 +6,43 @@ public static class VectorExtensions {
 
   // *********************** float2 *********************** //
 
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 xo(this float2 v) => new float2(v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 ox(this float2 v) => new float2(0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 oy(this float2 v) => new float2(0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 yo(this float2 v) => new float2(v.y, 0);
+  // [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 oo(this float2 v) => new float2(0, 0);
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxx(this float2 v) => new float3(0, v.x, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xox(this float2 v) => new float3(v.x, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xxo(this float2 v) => new float3(v.x, v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxo(this float2 v) => new float3(0, v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oox(this float2 v) => new float3(0, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xoo(this float2 v) => new float3(v.x, 0, 0);
+  // [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ooo(this float2 v) => new float3(0, 0, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyy(this float2 v) => new float3(0, v.y, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yoy(this float2 v) => new float3(v.y, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yyo(this float2 v) => new float3(v.y, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyo(this float2 v) => new float3(0, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ooy(this float2 v) => new float3(0, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yoo(this float2 v) => new float3(v.y, 0, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xyo(this float2 v) => new float3(v.x, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxy(this float2 v) => new float3(0, v.x, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yox(this float2 v) => new float3(v.y, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyx(this float2 v) => new float3(0, v.y, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xoy(this float2 v) => new float3(v.x, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yxo(this float2 v) => new float3(v.y, v.x, 0);
+
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 Add(this float2 v, Vector2 d) => new float2(v.x + d.x, v.y + d.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 Add(this float2 v, Vector3 d) => new float2(v.x + d.x, v.y + d.y);
+
+
+
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static bool LongerThan(this float2 v, float2 smaller) => math.lengthsq(v) > math.lengthsq(smaller);
 
 
@@ -23,11 +60,73 @@ public static class VectorExtensions {
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float AngleRad(this float2 v) => math.atan2(v.x, v.y);
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float SignedAngleRad(this float2 v) => v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y) * -1) : math.atan2(v.x, v.y);
 
+
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 SetDir(this float2 v, float2 d) => math.normalize(d * math.length(v));
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 SetDirSafe(this float2 v, float2 d, float2 defaultvalue = default(float2)) => math.normalizesafe(d, defaultvalue) * math.length(v);
 
 
   // *********************** float3 *********************** //
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 xo(this float3 v) => new float2(v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 ox(this float3 v) => new float2(0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 oy(this float3 v) => new float2(0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 yo(this float3 v) => new float2(v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 zo(this float3 v) => new float2(v.z, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 oz(this float3 v) => new float2(0, v.z);
+  // [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 oo(this float3 v) => new float2(0, 0);
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxx(this float3 v) => new float3(0, v.x, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xox(this float3 v) => new float3(v.x, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xxo(this float3 v) => new float3(v.x, v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxo(this float3 v) => new float3(0, v.x, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oox(this float3 v) => new float3(0, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xoo(this float3 v) => new float3(v.x, 0, 0);
+  // [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ooo(this float3 v) => new float3(0, 0, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyy(this float3 v) => new float3(0, v.y, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yoy(this float3 v) => new float3(v.y, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yyo(this float3 v) => new float3(v.y, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyo(this float3 v) => new float3(0, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ooy(this float3 v) => new float3(0, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yoo(this float3 v) => new float3(v.y, 0, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ozz(this float3 v) => new float3(0, v.z, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zoz(this float3 v) => new float3(v.z, 0, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zzo(this float3 v) => new float3(v.z, v.z, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ozo(this float3 v) => new float3(0, v.z, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ooz(this float3 v) => new float3(0, 0, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zoo(this float3 v) => new float3(v.z, 0, 0);
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xyo(this float3 v) => new float3(v.x, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxy(this float3 v) => new float3(0, v.x, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yox(this float3 v) => new float3(v.y, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyx(this float3 v) => new float3(0, v.y, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xoy(this float3 v) => new float3(v.x, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yxo(this float3 v) => new float3(v.y, v.x, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xzo(this float3 v) => new float3(v.x, v.z, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oxz(this float3 v) => new float3(0, v.x, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zox(this float3 v) => new float3(v.z, 0, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ozx(this float3 v) => new float3(0, v.z, v.x);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 xoz(this float3 v) => new float3(v.x, 0, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zxo(this float3 v) => new float3(v.y, v.x, 0);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zyo(this float3 v) => new float3(v.z, v.y, 0);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 ozy(this float3 v) => new float3(0, v.z, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yoz(this float3 v) => new float3(v.y, 0, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 oyz(this float3 v) => new float3(0, v.y, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 zoy(this float3 v) => new float3(v.z, 0, v.y);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 yzo(this float3 v) => new float3(v.y, v.z, 0);
+
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 Add(this float3 v, Vector2 d) => new float3(v.x + d.x, v.y + d.y, v.z);
+  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 Add(this float3 v, Vector3 d) => new float3(v.x + d.x, v.y + d.y, v.z + d.z);
+
+
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static bool LongerThan(this float3 v, float3 smaller) => math.lengthsq(v) > math.lengthsq(smaller);
 
@@ -38,10 +137,8 @@ public static class VectorExtensions {
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 AddLenSafe(this float3 v, float addition, float3 defaultvalue = default(float3)) => math.normalizesafe(v, defaultvalue) * (math.length(v) + addition);
 
 
-
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 SetDir(this float3 v, float3 d) => math.normalize(d * math.length(v));
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float3 SetDirSafe(this float3 v, float3 d, float3 defaultvalue = default(float3)) => math.normalizesafe(d, defaultvalue) * math.length(v);
-
 
   // *********************** Vector2 *********************** //
 

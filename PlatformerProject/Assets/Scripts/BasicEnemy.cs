@@ -19,7 +19,7 @@ public class BasicEnemy : Enemy {
   [SerializeField] private float _collisionDamage = 1;
   [SerializeField] private float _invulnerabilityDuration = 1;
   [SerializeField] private float _activeDistanceFromView = 2;
-  [SerializeField] private float deathDuration = 3;
+  [SerializeField] private float destroyTime = 3;
 
   private Physics2DCharacter physics;
   private Physics2DCharEnemyAI ai;
@@ -34,14 +34,20 @@ public class BasicEnemy : Enemy {
   override protected void EnemyUpdate() {
   }
 
-  override protected void OnHit(float damage, Collision2D col) {
-    base.OnHit(damage, col);
+  override protected void OnHit(float damage, Collision2D col, Weapon weapon) {
+    base.OnHit(damage, col, weapon);
+    var hitPos = col.GetContact(0).point;
+    physics.velocity += physics.velocity.Add(DegreeToVector2(weapon.GetHitAngle(hitPos) * Mathf.Deg2Rad) * weapon.GetHitSpeed(hitPos));
+    Debug.DrawRay(transform.position, DegreeToVector2(weapon.GetHitAngle(hitPos) * Mathf.Deg2Rad) * weapon.GetHitSpeed(hitPos), Color.green, 10);
   }
+  private static Vector2 DegreeToVector2(float radian) => new Vector2(Mathf.Cos(radian), Mathf.Sin(radian));
 
-  override protected void OnKill() {
+  override protected void OnKill(float damage, Collision2D col, Weapon weapon) {
     ai.enabled = false;
-    physics.layers.layerMask = 0;
-    Destroy(gameObject, deathDuration);
+    var layers = physics.layers;
+    layers.layerMask = 0;
+    physics.layers = layers;
+    Destroy(gameObject, destroyTime);
   }
 
 

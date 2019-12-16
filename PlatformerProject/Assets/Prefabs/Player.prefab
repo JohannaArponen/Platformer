@@ -70,7 +70,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 8046a336b138ede4eb274585b135b4d4, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9652c3464cc9048449639edd7e10c342, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -126,7 +126,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6098816732430366563}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8, y: 0.11, z: 0}
+  m_LocalPosition: {x: -0.439, y: 0.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2212887960708250883}
@@ -173,13 +173,44 @@ MonoBehaviour:
   animator: {fileID: 522968061}
   key: 304
   damage: 1
-  startAngle: 0
-  endAngle: 290
+  lowAngle: 0
+  topAngle: 320
+  angleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.48193553
+      outSlope: 0.48193553
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.44236723
+    - serializedVersion: 3
+      time: 0.5024286
+      value: 0.5301287
+      inSlope: 2.1396947
+      outSlope: 2.1396947
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8130379
+      value: 0.928207
+      inSlope: 0.25619978
+      outSlope: 0.25619978
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.68901896
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   duration: 0.75
-  cooldown: 0.2
-  col: {fileID: 1586940944351206573}
-  disableObjects:
-  - {fileID: 6890681697967849402}
+  cooldown: 0
+  disableObjects: []
   enableObjects:
   - {fileID: 1586940944351206573}
   disallowAttack: 0
@@ -198,6 +229,7 @@ GameObject:
   - component: {fileID: 6890681697967849402}
   - component: {fileID: 120432871}
   - component: {fileID: 120432872}
+  - component: {fileID: 7245016363391259706}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -293,7 +325,7 @@ MonoBehaviour:
   maxHeightSteps:
     x: 1
     y: 1
-  layers:
+  _layers:
     useTriggers: 0
     useLayerMask: 1
     useDepth: 0
@@ -426,6 +458,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f54075de1788fa4299b4f0903fb009f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useSwingDuration: 1
   channelTime: 1
   duration: 0.666
   startSpeed: 25
@@ -464,6 +497,18 @@ MonoBehaviour:
   weapon: {fileID: 0}
   ctrlr: {fileID: 6890681697967849402}
   particles: {fileID: 0}
+--- !u!114 &7245016363391259706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6644812756781074757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8fca9ec4e5781148956de2c4614df42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8728703504529978843
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,7 +533,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8728703504529978843}
   m_LocalRotation: {x: -0, y: -0, z: 0.5735763, w: -0.8191522}
-  m_LocalPosition: {x: 0.24, y: 1.13, z: 0}
+  m_LocalPosition: {x: 0.838, y: 1.728, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7399984378377721765}

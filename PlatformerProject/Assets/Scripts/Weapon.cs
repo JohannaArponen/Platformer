@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 using MyBox;
 
 public class Weapon : MonoBehaviour {
@@ -9,8 +10,10 @@ public class Weapon : MonoBehaviour {
   public Animator animator;
   public KeyCode key = KeyCode.X;
   public float damage = 1;
-  public float startAngle = 45;
-  public float endAngle = 135;
+  public float lowAngle = 45;
+  public float topAngle = 135;
+  private float angleDif { get => topAngle - lowAngle; }
+  public AnimationCurve angleCurve = new AnimationCurve();
   public float duration = 0.25f;
   public float cooldown = 0.2f;
 
@@ -24,16 +27,35 @@ public class Weapon : MonoBehaviour {
   [HideInInspector]
   public bool disallowAttack;
 
-  private Transform parent;
+  /// <summary> this is 0 at the start of swing and 1 at the end of swing </summary> 
+  public float time { get => _time; private set => _time = value; }
+  private float _time;
+
+  private Transform parent { get => transform.parent; }
   private float attackStart = 0;
   private bool attacking = false;
   private bool doAttack = false;
 
 
+  /// <summary> The degrees per second that the sword swings at time </summary>
+  public float GetSwingSpeed(float time = -1) => math.abs(angleDif * GetChangeAmount(time));
+  /// <summary> Calculates the collision speed in units/sec at a specific distance from the pivot point </summary>
+  public float GetHitSpeed(float distance, float time = -1) => Mathf.PI * (distance * distance) * (GetSwingSpeed(time) / 360);
+  /// <summary> Calculates the collision speed in units/sec at a specific distance from the pivot point. The pos parameter is only used for retrieving the distance </summary>
+  public float GetHitSpeed(Vector3 pos, float time = -1) => GetHitSpeed(Vector3.Distance(parent.transform.position, pos), time);
+  /// <summary> Calculates the collision angle at the specified point </summary>
+  public float GetHitAngle(Vector3 pos, float time = -1) => (pos - parent.transform.position).xy().SignedAngle() + (GetChangeAmount(time) < 0 == lowAngle < topAngle ? 90 : -90);
+  /// <summary> Returns the specified world space position relative to the pivot point </summary>
+  public Vector3 GetPosRelativeToPivot(Vector3 pos) => pos - parent.transform.position;
+
+  // On a linear curve from 0 to 1: Let duration be 1 and the value returned by this is always 1. Let duration be 2 and it's 0.5
+  /// <summary> Returns the change in value if a second passes when moving along the angle at time of angleCurve </summary>
+  float GetChangeAmount(float time = -1) => (angleCurve.Evaluate(Clamptime(time) + 0.01f) - angleCurve.Evaluate(Clamptime(time))) * (100 / duration);
+
+  float Clamptime(float time) => time == -1 ? (this.time > 0.99f ? 0.99f : this.time) : (time > 0.99f ? 0.99f : time);
 
   // Start is called before the first frame update
   void Start() {
-    parent = transform.parent;
     if (parent == null) throw new UnityException("Weapon requires a parent which is used as a pivot point for rotation!");
 
     foreach (var comp in disableObjects)
@@ -63,10 +85,11 @@ public class Weapon : MonoBehaviour {
   // Update is called once per frame
   void Update() {
     if (attacking) {
-      var fraction = (Time.time - attackStart) / duration;
-      if (animator != null) animator.SetFloat("Attack", fraction);
-      if (fraction <= 1) {
-        var angle = startAngle + (endAngle - startAngle) * fraction;
+      var time = (Time.time - attackStart) / duration;
+      if (animator != null) { animator.SetFloat("Attack", time); }
+      if (time <= 1) {
+        var curved = angleCurve.Evaluate((Time.time - attackStart) / duration);
+        var angle = lowAngle + (angleDif) * curved;
         parent.localRotation = Quaternion.AngleAxis(angle, Vector3.forward);
       } else {
         attacking = false;
@@ -74,7 +97,7 @@ public class Weapon : MonoBehaviour {
           Enable(comp, false);
         foreach (var comp in toDisable)
           Disable(comp, false);
-        parent.localRotation = Quaternion.AngleAxis(endAngle, Vector3.forward);
+        parent.localRotation = Quaternion.AngleAxis(topAngle, Vector3.forward);
       }
     } else {
 
@@ -94,7 +117,7 @@ public class Weapon : MonoBehaviour {
           Enable(comp);
 
         if (animator != null) animator.SetFloat("Attack", 0.0001f);
-        parent.localRotation = Quaternion.AngleAxis(startAngle, Vector3.forward);
+        parent.localRotation = Quaternion.AngleAxis(lowAngle, Vector3.forward);
       }
     }
   }
@@ -119,7 +142,6 @@ public class Weapon : MonoBehaviour {
   }
 
   void Enable(Object comp, bool listForDeactivate = true) {
-    print(comp.GetType());
     if (comp is Renderer) {
       if (!((Renderer)comp).enabled) {
         ((Renderer)comp).enabled = true;

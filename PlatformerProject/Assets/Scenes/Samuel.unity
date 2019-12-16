@@ -6604,44 +6604,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5485529262105970136, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5485529262105970136, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5485529262105970136, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5485529262105970136, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 1.95
-      objectReference: {fileID: 0}
-    - target: {fileID: 5485529262105970136, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.18
-      objectReference: {fileID: 0}
-    - target: {fileID: 4695776921016900855, guid: 5b350860cbf32d049a40a495971cd0a7,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.25
-      objectReference: {fileID: 0}
     - target: {fileID: 2077228396, guid: 5b350860cbf32d049a40a495971cd0a7, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 715490132}
-    - target: {fileID: 2077228396, guid: 5b350860cbf32d049a40a495971cd0a7, type: 3}
-      propertyPath: key
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b350860cbf32d049a40a495971cd0a7, type: 3}
 --- !u!1001 &4782139708564784166
@@ -6778,17 +6744,6 @@ PrefabInstance:
     - target: {fileID: 2807954612462019357, guid: 0fb479a613e72054194f47847dc0f751,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9001059011470069623, guid: 0fb479a613e72054194f47847dc0f751,
-        type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 9652c3464cc9048449639edd7e10c342,
-        type: 3}
-    - target: {fileID: 2592665424432997520, guid: 0fb479a613e72054194f47847dc0f751,
-        type: 3}
-      propertyPath: cooldown
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

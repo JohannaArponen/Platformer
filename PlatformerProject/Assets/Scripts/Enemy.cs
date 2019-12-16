@@ -79,7 +79,7 @@ public abstract class Enemy : MonoBehaviour {
       var weapon = collision.collider.gameObject.GetComponent<Weapon>();
       if (weapon != null) {
         invulnerabilityStart = Time.time;
-        OnHit(weapon.damage, collision);
+        OnHit(weapon.damage, collision, weapon);
       }
     }
   }
@@ -89,15 +89,15 @@ public abstract class Enemy : MonoBehaviour {
   virtual protected void OnCreate() {
 
   }
-  // On hit duh
-  virtual protected void OnHit(float damage, Collision2D col) {
+  // On hit duh. weapon may be null
+  virtual protected void OnHit(float damage, Collision2D col, Weapon weapon) {
     health -= damage;
     if (health <= 0) {
-      OnKill();
+      OnKill(damage, col, weapon);
     }
   }
-  // When killed
-  virtual protected void OnKill() {
+  // When killed. weapon may be null. col may be null
+  virtual protected void OnKill(float damage, Collision2D col, Weapon weapon) {
 
   }
   // When activated

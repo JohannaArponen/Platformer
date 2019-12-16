@@ -102,10 +102,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 0}
-  key: 304
+  key: 0
   damage: 1
-  startAngle: 0
-  endAngle: 290
+  lowAngle: 45
+  topAngle: 135
+  angleCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   duration: 0.75
   cooldown: 0.2
   disableObjects: []
@@ -138,8 +144,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1345570438287719756}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.152, y: 0.086, z: 0}
-  m_LocalScale: {x: 0.16666667, y: 0.16666667, z: 0.16666667}
+  m_LocalPosition: {x: 1.95, y: 1.18, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1402344028403886693}
   m_RootOrder: 1
@@ -198,6 +204,7 @@ GameObject:
   - component: {fileID: 1402344028403886694}
   - component: {fileID: 5483972488431013620}
   - component: {fileID: 1639749864076855189}
+  - component: {fileID: 7426473245646596005}
   m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
@@ -281,6 +288,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b154227927442ad49b896de772299a7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _kill: 0
+  _health: 5
+  _damage: 1
+  _collisionDamage: 1
+  _invulnerabilityDuration: 1
+  _activeDistanceFromView: 2
+  destroyTime: 3
 --- !u!114 &5483972488431013620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,7 +320,7 @@ MonoBehaviour:
   maxHeightSteps:
     x: 1
     y: 1
-  layers:
+  _layers:
     useTriggers: 0
     useLayerMask: 1
     useDepth: 0
@@ -315,7 +329,7 @@ MonoBehaviour:
     useOutsideNormalAngle: 0
     layerMask:
       serializedVersion: 2
-      m_Bits: 55
+      m_Bits: 23
     minDepth: 0
     maxDepth: 0
     minNormalAngle: 0
@@ -378,6 +392,18 @@ MonoBehaviour:
   wannaMoveLeft: 0
   wannaJump: 0
   extraJumpPower: 0
+--- !u!114 &7426473245646596005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402344028403886688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8fca9ec4e5781148956de2c4614df42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4733223617796649008
 GameObject:
   m_ObjectHideFlags: 0
@@ -404,7 +430,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4733223617796649008}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.009387493, y: 2.13, z: -2.4430947}
+  m_LocalPosition: {x: 0.009387493, y: 2.25, z: -2.4430947}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1402344028403886693}
