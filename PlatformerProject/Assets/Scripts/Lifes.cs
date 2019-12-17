@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-//using UnityEngine.SceneManagement;
+using UnityEngine.SceneManagement;
 
 public class Lifes : MonoBehaviour{
 
-    //public Text centerText;
+    public Text centerText;
 
     [HideInInspector]
     public float startHealth = 100;
@@ -48,13 +48,13 @@ public class Lifes : MonoBehaviour{
         }
     }
     void Die() {
-       /* health--;
+        health--;
         if(health <= 0) {
             string str = "Game Over!";
             print("Game Over");
             centerText.text = str;
             Time.timeScale = 0f;
-        }*/
+        }
         print("Die!!");
     }
 }
