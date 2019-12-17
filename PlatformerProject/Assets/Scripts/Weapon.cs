@@ -46,7 +46,7 @@ public class Weapon : MonoBehaviour {
   /// <summary> Calculates the collision speed in units/sec at a specific distance from the pivot point. The pos parameter is only used for retrieving the distance </summary>
   public float GetHitSpeed(Vector3 pos, float time = -1) => GetHitSpeed(Vector3.Distance(parent.transform.position, pos), time);
   /// <summary> Calculates the collision angle at the specified point </summary>
-  public float GetHitAngle(Vector3 pos, float time = -1) => (pos - parent.transform.position).xy().SignedAngle() + (GetChangeAmount(time) < 0 ? 90 : -90);
+  public float GetHitAngle(Vector3 pos, float time = -1) => (pos - parent.transform.position).xy().Angle() + (GetChangeAmount(time) < 0 ? 90 : -90);
   /// <summary> Returns the current angle of parent </summary>
   public float GetAngle() => parent.transform.rotation.eulerAngles.z;
   /// <summary> Returns the current angle of parent and adds 90 degrees towards swing direction  </summary>

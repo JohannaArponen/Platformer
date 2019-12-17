@@ -35,8 +35,11 @@ public class RocketBoost : MonoBehaviour {
   public Weapon weapon;
   [Tooltip("Controller is used to determine direction of movement. Defaults to the one returned by GetComponentInChildren")]
   public Physics2DCharController ctrlr;
-  [Tooltip("Optional particle system to use when boosting")]
+  [Tooltip("Optional particle system to activate when boosting")]
   public ParticleSystem particles;
+
+  [Tooltip("Optional. Does animation. Boost bool is passed as \"Boost\"")]
+  public Animator animator;
 
   private float boostStartTime = float.NegativeInfinity;
   private float waitStartTime = float.NegativeInfinity;
@@ -47,6 +50,7 @@ public class RocketBoost : MonoBehaviour {
   private (bool x, bool y) releasedWhileBoost = (false, false);
   private (float x, float y) saveDirTime = (float.NegativeInfinity, float.NegativeInfinity);
   private Vector2 saveDir;
+  private float2 prevVel;
   private bool hasHitSomething;
 
   private Physics2DCharacter charPhysics;
@@ -84,7 +88,15 @@ public class RocketBoost : MonoBehaviour {
         }
       }
       var speed = startSpeed + speedCurve.Evaluate((Time.time - boostStartTime) / duration) * (endSpeed - startSpeed);
+      if (bouncy.velocity.Equals(float2.zero)) {
+        bouncy.velocity = prevVel.SetLenSafe(-speed);
+        if (bouncy.velocity.y < 0) bouncy.velocity.y = 0;
+        EndBoost();
+        return;
+      }
       bouncy.velocity = bouncy.velocity.SetLenSafe(speed);
+      prevVel = bouncy.velocity;
+      UpdateAnim();
       return;
     } else {
       if (Input.GetKey(weapon.key)) {
@@ -98,6 +110,12 @@ public class RocketBoost : MonoBehaviour {
           channeledTime = 0;
       }
     }
+  }
+
+  void UpdateAnim() {
+    charPhysics.Flip(bouncy.velocity.x);
+    var angle = bouncy.velocity.Angle();
+    animator.gameObject.transform.rotation = Quaternion.Euler(0, 0, bouncy.velocity.x < 0 ? -angle : -angle);
   }
 
   void StartBoost() {
@@ -132,9 +150,15 @@ public class RocketBoost : MonoBehaviour {
     releaseTime.x = float.NegativeInfinity;
     releaseTime.x = float.NegativeInfinity;
     EnableAttack(false);
+    animator.SetBool("Boost", true);
+    UpdateAnim();
   }
 
   void EndBoost() {
+    if (animator != null) {
+      animator.gameObject.transform.localRotation = Quaternion.identity;
+      animator.SetBool("Boost", false);
+    }
     boosting = false;
     bouncy.enabled = false;
     charPhysics.enabled = true;

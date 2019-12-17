@@ -25,4 +25,46 @@ static class ArrayExtensions {
   public static void Reverse<T>(this T[] array, int index, int length) => System.Array.Reverse(array, index, length);
   public static void Reverse<T>(this T[] array) => System.Array.Reverse(array);
 
+  public delegate R MapCallback1<R, T>(T current);
+  public delegate R MapCallback2<R, T>(T current, int index);
+  public delegate R MapCallback3<R, T>(T current, int index, T[] array);
+
+  /// <summary> Returns the resulting array if func is ran on each element </summary>
+  public static R[] Map<T, R>(this T[] array, MapCallback1<R, T> callback) {
+    R[] res = new R[array.Length];
+    for (int i = 0; i < array.Length; i++) {
+      res[i] = callback(array[i]);
+    }
+    return res;
+  }
+  /// <summary> Returns the resulting array if func is ran on each element </summary>
+  public static R[] Map<T, R>(this T[] array, MapCallback2<R, T> callback) {
+    R[] res = new R[array.Length];
+    for (int i = 0; i < array.Length; i++) {
+      res[i] = callback(array[i], i);
+    }
+    return res;
+  }
+  /// <summary> Returns the resulting array if func is ran on each element </summary>
+  public static R[] Map<T, R>(this T[] array, MapCallback3<R, T> callback) {
+    R[] res = new R[array.Length];
+    for (int i = 0; i < array.Length; i++) {
+      res[i] = callback(array[i], i, array);
+    }
+    return res;
+  }
+  /*
+  
+callback
+  Function that produces an element of the new Array, taking three arguments:
+currentValue
+  The current element being processed in the array.
+indexOptional
+  The index of the current element being processed in the array.
+arrayOptional
+  The array map was called upon.
+thisArgOptional
+  Value to use as this when executing callback.
+*/
+
 }

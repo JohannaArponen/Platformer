@@ -8,11 +8,18 @@ using MyBox;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Physics2DCharacter : MonoBehaviour {
 
-  [Tooltip("Optional. Does animation. Speed value is passed as \"Speed\"")]
+  [Tooltip("Optional. Does animation. Speed value is passed as \"Speed\" and jump values as \"Jump\"")]
   public Animator animator;
   [ConditionalField(nameof(animator))]
   [Tooltip("Speed of move animation is multiplied by this")]
   public float animationSpeedMultiplier = 1;
+  [ConditionalField(nameof(animator))]
+  [Tooltip("Jump float value when flying up")]
+  public float jumpUpVal = 1f;
+  [ConditionalField(nameof(animator))]
+  [Tooltip("Jump float value when falling down")]
+  public float jumpDownVal = 0.5f;
+
   [Tooltip("Multiplies the scale by -1 when changing direction")]
   public bool flip = true;
   private bool flipped = false;
@@ -159,8 +166,6 @@ public class Physics2DCharacter : MonoBehaviour {
       foreach (var child in disabledChildren)
         child.gameObject.SetActive(true);
 
-    if (animator != null)
-      animator.SetFloat("Speed", !onGround || onSlope ? 0 : math.abs((finalPos.x - transform.position.x) * animationSpeedMultiplier / Time.deltaTime));
     finalPos = transform.position;
     staticVelocity = Vector2.zero;
   }
@@ -209,6 +214,17 @@ public class Physics2DCharacter : MonoBehaviour {
     }
 
     var endVel = (staticVelocity + velocity + debugVelocity) * Time.deltaTime + pureVelocity;
+
+
+    // Anim handling
+    if (animator != null) {
+      if (onGround && !onSlope) {
+        animator.SetFloat("Speed", math.abs(endVel.x * animationSpeedMultiplier / Time.smoothDeltaTime));
+        animator.SetFloat("Jump", -1);
+      } else animator.SetFloat("Jump", endVel.y > 0 ? jumpUpVal : jumpDownVal);
+    }
+
+
 
     for (int i = 0; i < maxPhysicsIters; i++) {
       var hit = cast.Cast(transform.position, endVel);
@@ -302,17 +318,19 @@ public class Physics2DCharacter : MonoBehaviour {
         break;
     }
 
-    // Flip some shit
-    if (flip && endVel.x != 0) {
-      if (endVel.x > 0) {
-        if (flipped) {
-          transform.localScale += new Vector3(transform.localScale.x * -2, 0, 0);
-          flipped = !flipped;
-        }
-      } else if (!flipped) {
+    Flip(endVel.x);
+  }
+
+  public void Flip(float velX) {
+    if (!flip || velX == 0) return;
+    if (velX > 0) {
+      if (flipped) {
         transform.localScale += new Vector3(transform.localScale.x * -2, 0, 0);
         flipped = !flipped;
       }
+    } else if (!flipped) {
+      transform.localScale += new Vector3(transform.localScale.x * -2, 0, 0);
+      flipped = !flipped;
     }
   }
 

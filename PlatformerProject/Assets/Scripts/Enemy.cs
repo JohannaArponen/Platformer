@@ -13,16 +13,22 @@ public abstract class Enemy : MonoBehaviour {
   protected abstract float activeDistanceFromView { get; set; }
 
   protected ContactFilter2D contactFilter;
+  /// <summary> Time to pass when changing alpha when flashing (invulnerable) </summary>
+  protected float flickerSpeed = 0.1f;
+  /// <summary> Alpha values for flashing </summary>
+  protected (float a, float b) flickerAlpha = (0.25f, 0.5f);
+  protected SpriteRenderer sr;
+  protected Rect rect;
+  protected Collider2D col;
 
-  private float invulnerabilityStart = float.NegativeInfinity;
+  protected float invulnerabilityStart = float.NegativeInfinity;
+  protected bool invulnerable { get => _invulnerable; set { if (_invulnerable = value) return; _invulnerable = value; if (value) OnInvulnerableStart(); else OnInvulnerableEnd(); } }
+  protected bool _invulnerable = false;
 
   private bool _activated = false;
 
   private Camera cam;
   private bool inView;
-  private Rect rect;
-  private SpriteRenderer sr;
-  private Collider2D col;
 
   public bool activated {
     get => _activated; set {
@@ -85,6 +91,8 @@ public abstract class Enemy : MonoBehaviour {
   }
   // On hit duh. weapon may be null
   virtual protected void OnHit(float damage, Collider2D col, Weapon weapon) {
+    invulnerabilityStart = Time.time;
+    invulnerable = true;
     health -= damage;
     if (health <= 0) {
       OnKill(damage, col, weapon);
@@ -104,18 +112,26 @@ public abstract class Enemy : MonoBehaviour {
   }
   // Just like Update but only called when activated
   virtual protected void EnemyUpdate() {
+    if (kill) return;
     if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
+      if (invulnerable) {
+        invulnerable = false;
+        OnInvulnerableEnd();
+      }
       var results = new List<Collider2D>();
       if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
         foreach (var result in results) {
+          if (result.gameObject.tag == "Player") {
+            print("HIT PLAYER");
+            return;
+          }
           var weapon = result.gameObject.GetComponent<Weapon>();
           if (weapon != null) {
-            invulnerabilityStart = Time.time;
             OnHit(weapon.damage, result, weapon);
           }
         }
       }
-    }
+    } else OnInvulnerable();
   }
   // When enters visible area
   virtual protected void OnEnterView() {
@@ -124,5 +140,23 @@ public abstract class Enemy : MonoBehaviour {
   // When exits visible area
   virtual protected void OnExitView() {
 
+  }
+
+
+  // When starting invulnerability
+  protected virtual void OnInvulnerableStart() { }
+  // When ending invulnerability
+  protected virtual void OnInvulnerableEnd() {
+    var color = sr.color;
+    color.a = 1;
+    sr.color = color;
+  }
+
+  // When invulnerable
+  protected virtual void OnInvulnerable() {
+    if (sr == null) return;
+    var color = sr.color;
+    color.a = Mathf.FloorToInt((Time.time - invulnerabilityStart) / flickerSpeed) % 2 == 1 ? flickerAlpha.a : flickerAlpha.b;
+    sr.color = color;
   }
 }

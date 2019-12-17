@@ -56,9 +56,7 @@ public static class VectorExtensions {
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 SetAngle(this float2 v, float degrees) => math.rotate(quaternion.EulerXYZ(0, 0, math.radians(degrees)), new float3(math.length(v), 0, 0)).xy;
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 SetAngleRadians(this float2 v, float radians) => math.rotate(quaternion.EulerXYZ(0, 0, radians), new float3(math.length(v), 0, 0)).xy;
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float Angle(this float2 v) => math.degrees(math.atan2(v.x, v.y));
-  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float SignedAngle(this float2 v) => math.degrees(v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y) * -1) : math.atan2(v.x, v.y));
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float AngleRad(this float2 v) => math.atan2(v.x, v.y);
-  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float SignedAngleRad(this float2 v) => v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y) * -1) : math.atan2(v.x, v.y);
 
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float2 SetDir(this float2 v, float2 d) => math.normalize(d * math.length(v));
@@ -156,9 +154,7 @@ public static class VectorExtensions {
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static Vector2 SetAngle(this Vector2 v, float degrees) => Quaternion.Euler(0, 0, degrees) * new Vector2(v.magnitude, 0);
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static Vector2 SetAngleRadians(this Vector2 v, float radians) => Quaternion.EulerAngles(0, 0, radians) * new Vector2(v.magnitude, 0);
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float Angle(this Vector2 v) => Vector2.Angle(Vector2.up, v);
-  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float SignedAngle(this Vector2 v) => math.degrees(v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y)) * -1 : math.atan2(v.x, v.y));
   [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float AngleRad(this Vector2 v) => math.atan2(v.x, v.y);
-  [MethodImpl(MethodImplOptions.AggressiveInlining)] public static float SignedAngleRad(this Vector2 v) => v.x < 0 ? 6.283185307179586476925286766559f - (math.atan2(v.x, v.y)) * -1 : math.atan2(v.x, v.y);
 #pragma warning restore CS0618
 
 

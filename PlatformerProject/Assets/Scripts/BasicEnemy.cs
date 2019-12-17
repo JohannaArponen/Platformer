@@ -21,7 +21,6 @@ public class BasicEnemy : Enemy {
   [SerializeField] private float _activeDistanceFromView = 2;
   [SerializeField] private float destroyTime = 3;
   [SerializeField] private float pushMultiplier = 1;
-  [SerializeField] private float maxRotationOnDeath = 90;
 
   private Physics2DCharacter physics;
   private Physics2DCharEnemyAI ai;
@@ -41,19 +40,15 @@ public class BasicEnemy : Enemy {
     base.OnHit(damage, col, weapon);
     var dist = Vector3.Distance(transform.position, weapon.parent.transform.position);
     physics.velocity += physics.velocity.Add(AngleToVector(weapon.GetDirectionAngle() * Mathf.Deg2Rad) * weapon.GetHitSpeed(dist)) * pushMultiplier;
-    print($"angle: {weapon.GetDirectionAngle()}, speed: {weapon.GetHitSpeed(dist)}");
-    Debug.DrawRay(transform.position, AngleToVector(weapon.GetDirectionAngle() * Mathf.Deg2Rad) * weapon.GetHitSpeed(dist), Color.green, 10);
+
+    Vector2 AngleToVector(float radian) => new Vector2(Mathf.Cos(radian), Mathf.Sin(radian));
   }
-  private static Vector2 AngleToVector(float radian) => new Vector2(Mathf.Cos(radian), Mathf.Sin(radian));
 
   override protected void OnKill(float damage, Collider2D col, Weapon weapon) {
     ai.enabled = false;
     var layers = physics.layers;
     layers.layerMask = 0;
     physics.layers = layers;
-    // !!! MUST IMPLEMENT ROTATION MANUALLY
-    // GetComponent<Rigidbody2D>().freezeRotation = false;
-    // GetComponent<Rigidbody2D>().AddTorque(Random.Range(-maxRotationOnDeath / 2, maxRotationOnDeath / 2));
     Destroy(gameObject, destroyTime);
   }
 
