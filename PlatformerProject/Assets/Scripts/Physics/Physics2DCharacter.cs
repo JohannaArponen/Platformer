@@ -35,8 +35,12 @@ public class Physics2DCharacter : MonoBehaviour {
   public bool ignoreChildColliders = true;
   [Tooltip("Maximum amount of iterations done to check for walkable obstacles (horizontal, vertical). Each iteration the value is halved")]
   public float2 maxHeightSteps = 1;
+
+  public ContactFilter2D layers { get => _layers; set { _layers = value; if (cast != null) cast.layers = value; } }
+  [SerializeField]
   [Tooltip("Layers which are checked by the raycasts")]
-  public ContactFilter2D layers;
+  private ContactFilter2D _layers;
+
   [PositiveValueOnly]
   [Tooltip("Maximum physics box raycasts. When a raycast collides, a new raycast is done along its vector")]
   public int maxPhysicsIters = 3;
@@ -290,8 +294,6 @@ public class Physics2DCharacter : MonoBehaviour {
             var colPos = CollisionPos(downHit, transform.position, dir);
             if (cast.AssertTeleport(colPos))
               velocity.y = 0;
-          } else {
-            print("wtf");
           }
         }
         break;

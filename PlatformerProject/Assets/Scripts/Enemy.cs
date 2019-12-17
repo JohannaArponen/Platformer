@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public abstract class Enemy : MonoBehaviour {
 
+  protected abstract bool kill { get; set; }
   protected abstract float health { get; set; }
   protected abstract float damage { get; set; }
   protected abstract float collisionDamage { get; set; }
   protected abstract float invulnerabilityDuration { get; set; }
   protected abstract float activeDistanceFromView { get; set; }
+
+  protected ContactFilter2D contactFilter;
+
   private float invulnerabilityStart = float.NegativeInfinity;
 
   private bool _activated = false;
@@ -19,6 +22,7 @@ public abstract class Enemy : MonoBehaviour {
   private bool inView;
   private Rect rect;
   private SpriteRenderer sr;
+  private Collider2D col;
 
   public bool activated {
     get => _activated; set {
@@ -33,7 +37,9 @@ public abstract class Enemy : MonoBehaviour {
 
   public void Start() {
     cam = Camera.main;
-    sr = GetComponent<SpriteRenderer>();
+    sr = GetComponentInChildren<SpriteRenderer>();
+    col = GetComponentInChildren<Collider2D>();
+    contactFilter = new ContactFilter2D();
     OnCreate();
     Updaterect();
     inView = GetSpawnRect().Overlaps(rect);
@@ -58,6 +64,7 @@ public abstract class Enemy : MonoBehaviour {
   }
 
   protected void Updaterect() {
+    if (sr == null) rect = new Rect(col.bounds.min.xy(), col.bounds.size.xy());
     rect = new Rect(sr.bounds.min.xy(), sr.bounds.size.xy());
   }
 
@@ -66,33 +73,56 @@ public abstract class Enemy : MonoBehaviour {
     var bottomRight = cam.ViewportToWorldPoint(Vector2.one).xy().AddXY(activeDistanceFromView);
     Updaterect();
     MyUtil.DrawBoxXY(topLeft, bottomRight - topLeft, Color.green);
+    if (sr == null) MyUtil.DrawBoxXY(col.bounds.min.xy(), col.bounds.size.xy(), Color.cyan);
     MyUtil.DrawBoxXY(sr.bounds.min.xy(), sr.bounds.size.xy(), Color.cyan);
     return new Rect(topLeft, bottomRight - topLeft);
   }
 
-  public void OnCollisionEnter2D(Collision2D collision) {
-    if (Time.time > invulnerabilityStart + invulnerabilityDuration) {
-      var weapon = collision.collider.gameObject.GetComponent<Weapon>();
-      if (weapon != null) {
-        invulnerabilityStart = Time.time;
-        OnHit(weapon.damage, collision);
+
+  // On creation
+  virtual protected void OnCreate() {
+
+  }
+  // On hit duh. weapon may be null
+  virtual protected void OnHit(float damage, Collider2D col, Weapon weapon) {
+    health -= damage;
+    if (health <= 0) {
+      OnKill(damage, col, weapon);
+    }
+  }
+  // When killed. weapon may be null. col may be null
+  virtual protected void OnKill(float damage, Collider2D col, Weapon weapon) {
+
+  }
+  // When activated
+  virtual protected void OnActivate() {
+
+  }
+  // When deactivated
+  virtual protected void OnDeactivate() {
+
+  }
+  // Just like Update but only called when activated
+  virtual protected void EnemyUpdate() {
+    if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
+      var results = new List<Collider2D>();
+      if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
+        foreach (var result in results) {
+          var weapon = result.gameObject.GetComponent<Weapon>();
+          if (weapon != null) {
+            invulnerabilityStart = Time.time;
+            OnHit(weapon.damage, result, weapon);
+          }
+        }
       }
     }
   }
-
-
-  // On creation
-  protected abstract void OnCreate();
-  // On hit duh
-  protected abstract void OnHit(float damage, Collision2D col);
-  // When activated
-  protected abstract void OnActivate();
-  // When deactivated
-  protected abstract void OnDeactivate();
-  // Just like Update but only called when activated
-  protected abstract void EnemyUpdate();
   // When enters visible area
-  protected abstract void OnEnterView();
+  virtual protected void OnEnterView() {
+
+  }
   // When exits visible area
-  protected abstract void OnExitView();
+  virtual protected void OnExitView() {
+
+  }
 }

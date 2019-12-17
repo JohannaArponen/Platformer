@@ -16,6 +16,17 @@ public class Physics2DCharEnemyAI : MonoBehaviour {
   public bool wannaMoveRight = false;
   public bool wannaMoveLeft = true;
   public bool wannaJump = false;
+  public float extraJumpPower = 0;
+
+  void OnTriggerEnter2D(Collider2D col) {
+    var jumper = col.GetComponent<EnemyJumpPoint>();
+    if (jumper != null) {
+      if (wannaMoveRight == jumper.right) {
+        wannaJump = true;
+        extraJumpPower = jumper.extraForce;
+      }
+    }
+  }
 
 
   void Start() {
@@ -48,7 +59,8 @@ public class Physics2DCharEnemyAI : MonoBehaviour {
       if (physics.onGround) {
         // Jump
         if (wannaJump) {
-          physics.velocity.y = jumpStrength;
+          physics.velocity.y = jumpStrength + extraJumpPower;
+          extraJumpPower = 0;
           wannaJump = false;
         }
       }

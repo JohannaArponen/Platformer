@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+using MyBox;
 
 [RequireComponent(typeof(Physics2DCharacter))]
 [RequireComponent(typeof(Physics2DReflective))]
 public class RocketBoost : MonoBehaviour {
 
+  [Tooltip("Use weapon swing duration as channel time")]
+  public bool useSwingDuration = true;
+  [ConditionalField(nameof(useSwingDuration), true)]
   public float channelTime = 1f;
   public float duration = 1.5f;
   public float startSpeed = 10;
@@ -88,7 +92,7 @@ public class RocketBoost : MonoBehaviour {
         channeledTime += Time.deltaTime;
       } else {
         EnableAttack(true);
-        if (Time.time < waitStartTime + waitDuration || (Input.GetKeyUp(weapon.key) && channeledTime >= channelTime))
+        if (Time.time < waitStartTime + waitDuration || (Input.GetKeyUp(weapon.key) && channeledTime >= (useSwingDuration ? weapon.duration : channelTime)))
           StartBoost();
         else
           channeledTime = 0;
