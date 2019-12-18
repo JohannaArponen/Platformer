@@ -1658,6 +1658,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4656773028732009192, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: maxHeightSteps.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4656773028732009192, guid: 0fb479a613e72054194f47847dc0f751,
+        type: 3}
+      propertyPath: maxHeightSteps.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1729403370, guid: 0fb479a613e72054194f47847dc0f751, type: 3}
       propertyPath: centerText
       value: 
@@ -4935,11 +4945,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
       propertyPath: room.x
-      value: -24.175
+      value: -21.8
       objectReference: {fileID: 0}
     - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
       propertyPath: room.y
-      value: 134.21
+      value: 135.91
+      objectReference: {fileID: 0}
+    - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
+      propertyPath: dimensions.x
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
+      propertyPath: room.width
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
+      propertyPath: dimensions.y
+      value: 9.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114275773, guid: 966898e3fd49be84ebc10be6d76a2661, type: 3}
+      propertyPath: room.height
+      value: 9.1
       objectReference: {fileID: 0}
     - target: {fileID: 7392398825260845930, guid: 966898e3fd49be84ebc10be6d76a2661,
         type: 3}
