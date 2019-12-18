@@ -6,17 +6,24 @@ public class BossManager : MonoBehaviour {
 
   public Vector2 center = Vector2.zero;
   public Vector2 dimensions = Vector2.zero;
+  public float damage = 5;
   [HideInInspector]
   public Rect room;
   [HideInInspector]
   public GameObject player;
   [HideInInspector]
   public Animator animator;
+  [HideInInspector]
+  public Lifes lifes;
+  [HideInInspector]
+  public Rigidbody2D rb;
+
 
   [HideInInspector]
   public bool dead = false;
   [HideInInspector]
   public bool active = false;
+  private bool hasNotBeenFunckingSpawned = true;
 
 
   void OnDrawGizmosSelected() {
@@ -35,54 +42,101 @@ public class BossManager : MonoBehaviour {
     room = new Rect(transform.position.xy() + center - dimensions / 2, dimensions);
     player = GameObject.FindGameObjectWithTag("Player");
     animator = GetComponent<Animator>();
+    lifes = GetComponent<Lifes>();
+    rb = GetComponent<Rigidbody2D>();
     animator.Play("Spawn");
     animator.enabled = false;
   }
 
-  void EarlyUpdate() {
-    animator.SetBool("SpiderEnd", false);
+  void Update() {
+    if (hasNotBeenFunckingSpawned && room.Contains(player.transform.position.xy())) {
+      Spawn();
+      return;
+    }
+    if (!active) return;
+    var results = new List<Collider2D>();
+    rb.OverlapCollider(new ContactFilter2D(), results);
+    foreach (var col in results) {
+      if (col.tag == "PlayerWeapon") {
+        var weap = col.gameObject.GetComponent<Weapon>();
+        lifes.DamagePlayer(weap.damage, col.gameObject);
+        continue;
+      } else if (col.tag == "Player") {
+        var lifes = col.gameObject.GetComponent<Lifes>();
+        lifes.DamagePlayer(damage, col.gameObject);
+        continue;
+      }
+    }
+    ResetAll();
+    var rand = Random.Range(0, 7);
+    switch (rand) {
+      case 1:
+        ExtendHead();
+        break;
+      case 2:
+        ExtendArmL();
+        break;
+      case 3:
+        ExtendArmR();
+        break;
+      case 4:
+        ExtendTailL();
+        break;
+      case 5:
+        ExtendTailR();
+        break;
+      case 6:
+        StartSpiders();
+        break;
+    }
+
+    if (lifes.health <= 0) {
+      Die();
+    }
   }
 
 
   [MyBox.ButtonMethod]
   void Spawn() {
+    hasNotBeenFunckingSpawned = false;
     animator.enabled = true;
     animator.Play("Spawn");
     active = true;
   }
   [MyBox.ButtonMethod]
   void Die() {
+    if (dead) return;
     animator.Play("Death");
-    dead = true;
-  }
-  [MyBox.ButtonMethod]
-  void BackToIdle() {
-    animator.Play("Idle");
+    active = false;
   }
 
-  [MyBox.ButtonMethod]
+
   void ExtendHead() {
-    animator.Play("Head_Extend");
+    animator.SetBool("Head_Extend", true);
   }
-  [MyBox.ButtonMethod]
   void ExtendArmL() {
-    animator.Play("L_Arm_Extend");
+    animator.SetBool("L_Arm_Extend", true);
   }
-  [MyBox.ButtonMethod]
   void ExtendArmR() {
-    animator.Play("R_Arm_Extend");
+    animator.SetBool("R_Arm_Extend", true);
   }
-  [MyBox.ButtonMethod]
   void ExtendTailL() {
-    animator.Play("L_Tail_Extend");
+    animator.SetBool("L_Tail_Extend", true);
   }
-  [MyBox.ButtonMethod]
   void ExtendTailR() {
-    animator.Play("R_Tail_Extend");
+    animator.SetBool("R_Tail_Extend", true);
   }
-  [MyBox.ButtonMethod]
   void StartSpiders() {
-    animator.Play("Spiders");
+    animator.SetBool("Spiders", true);
+  }
+
+  void ResetAll() {
+    animator.SetBool("Head_Extend", false);
+    animator.SetBool("L_Arm_Extend", false);
+    animator.SetBool("R_Arm_Extend", false);
+    animator.SetBool("L_Tail_Extend", false);
+    animator.SetBool("R_Tail_Extend", false);
+    animator.SetBool("Spiders", false);
   }
 
   // Update is called once per frame

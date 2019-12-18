@@ -19,7 +19,7 @@ TagManager:
   - PlayerWeapon
   - Enemy
   - CollideWithPlayer
-  - 
+  - Boss
   - 
   - 
   - 
@@ -40,6 +40,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: behind
+    uniqueID: 915258733
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
