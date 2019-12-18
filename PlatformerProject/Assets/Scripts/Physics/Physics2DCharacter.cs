@@ -177,7 +177,8 @@ public class Physics2DCharacter : MonoBehaviour {
   bool MoveWithGround() {
     var a = new float2(1, 1);
     var colGo = onGround.collider.gameObject;
-    if (colGo.isStatic) return false; // Moving or deactivating static things breaks things
+    var comp = colGo.GetComponent<CompositeCollider2D>();
+    if (comp != null && comp.generationType == CompositeCollider2D.GenerationType.Synchronous) return false; // Dont move manual compositeColliders
     colGo.SetActive(false);
     var dir = (colGo.transform.position - colPrevTransform.position).xy();
     var hit = cast.Cast(transform.position, dir);

@@ -330,3 +330,13 @@ public class MoveToClosestPointInShapesCustomEditor : Editor {
     }
   }
 }
+
+public static class Ext {
+    /// <summary> Returns true if `array` has `value` </summary>
+    public static bool Includes<T>(this T[] array, T value) {
+        int length = array.Length;
+        for (int i = 0; i < length; i++)
+            if (array[i].Equals(value)) return true;
+        return false;
+    }
+}

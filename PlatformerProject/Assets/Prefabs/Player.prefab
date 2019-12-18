@@ -230,6 +230,7 @@ GameObject:
   - component: {fileID: 120432871}
   - component: {fileID: 120432872}
   - component: {fileID: 7245016363391259706}
+  - component: {fileID: 1729403370}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -321,13 +322,13 @@ MonoBehaviour:
   defaultGravity: 100
   drag: 0.05
   maxAngle: 45.1
-  maxHeightStep: 0.125
+  maxHeightStep: 0.01
   airHeightStep: 0
   moveWithGround: 1
   ignoreChildColliders: 1
   maxHeightSteps:
-    x: 1
-    y: 1
+    x: 0
+    y: 0
   _layers:
     useTriggers: 0
     useLayerMask: 1
@@ -513,6 +514,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8fca9ec4e5781148956de2c4614df42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1729403370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6644812756781074757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37ed157703cc24243adc85b0cf6497f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  centerText: {fileID: 0}
+  startHealth: 100
+  health: 0
+  healthElement: {fileID: 0}
+  canvas: {fileID: 0}
+  phys: {fileID: 0}
+  handleDie: 1
+  gap: 5
+  invulnerableDuration: 0.5
+  onHitPushForce: 0.5
+  deathEffect: {fileID: 6644812756781074757}
+  healthBar: {fileID: 0}
 --- !u!1 &8728703504529978843
 GameObject:
   m_ObjectHideFlags: 0
