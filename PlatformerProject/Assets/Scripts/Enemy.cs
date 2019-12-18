@@ -163,23 +163,25 @@ public abstract class Enemy : MonoBehaviour {
   protected virtual void _OnDeactivate() => OnDeactivate();
 
   // Just like Update but only called when activated
-
-  protected virtual void EnemyUpdate() { }
-  protected virtual void _EnemyUpdate() {
-    if (!dead) {
-      if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
-        var results = new List<Collider2D>();
-        if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
-          foreach (var result in results) {
-            if (result.gameObject.tag == "Player") {
-               // collisionDamage
-                result.GetComponent<Lifes>().DamagePlayer(collisionDamage);
-            }
-            var weapon = result.gameObject.GetComponent<Weapon>();
-            if (weapon != null) {
-              _OnHit(weapon.damage, result, weapon);
-            }
-
+  virtual protected void EnemyUpdate() { }
+  virtual protected void _EnemyUpdate() {
+    if (dead) return;
+    if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
+      if (invulnerable) {
+        invulnerable = false;
+        OnInvulnerableEnd();
+      }
+      var results = new List<Collider2D>();
+      if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
+        foreach (var result in results) {
+          if (result.gameObject.tag == "Player") {
+            print("HIT PLAYER");
+            result.GetComponent<Lifes>().DamagePlayer(collisionDamage, gameObject);
+            return;
+          }
+          var weapon = result.gameObject.GetComponent<Weapon>();
+          if (weapon != null) {
+            OnHit(weapon.damage, result, weapon);
           }
         }
       } else invulnerable = false;
