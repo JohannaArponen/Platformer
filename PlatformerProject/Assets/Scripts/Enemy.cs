@@ -123,6 +123,7 @@ public abstract class Enemy : MonoBehaviour {
         foreach (var result in results) {
           if (result.gameObject.tag == "Player") {
             print("HIT PLAYER");
+            result.GetComponent<Lifes>().DamagePlayer(2);
             return;
           }
           var weapon = result.gameObject.GetComponent<Weapon>();
