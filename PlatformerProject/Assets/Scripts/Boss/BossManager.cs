@@ -49,6 +49,7 @@ public class BossManager : MonoBehaviour {
   }
 
   void Update() {
+    if (dead) return;
     if (hasNotBeenFunckingSpawned && room.Contains(player.transform.position.xy())) {
       Spawn();
       return;
@@ -56,17 +57,19 @@ public class BossManager : MonoBehaviour {
     if (!active) return;
     var results = new List<Collider2D>();
     rb.OverlapCollider(new ContactFilter2D(), results);
+    bool hitPlayer = false;
+    bool gotHit = false;
     foreach (var col in results) {
       if (col.tag == "PlayerWeapon") {
         var weap = col.gameObject.GetComponent<Weapon>();
-        lifes.DamagePlayer(weap.damage, col.gameObject);
-        continue;
+        gotHit = true;
+        this.lifes.DamagePlayer(weap.damage, col.gameObject);
+        break;
       } else if (col.tag == "Player") {
-        var lifes = col.gameObject.GetComponent<Lifes>();
-        lifes.DamagePlayer(damage, col.gameObject);
-        continue;
+        hitPlayer = true;
       }
     }
+    if (!gotHit && hitPlayer) player.GetComponent<Lifes>().DamagePlayer(damage, gameObject);
     ResetAll();
     var rand = Random.Range(0, 7);
     switch (rand) {
@@ -142,5 +145,6 @@ public class BossManager : MonoBehaviour {
   // Update is called once per frame
   public void DeletSpiders() {
     animator.SetBool("SpiderEnd", true);
+    animator.SetBool("Spiders", false);
   }
 }

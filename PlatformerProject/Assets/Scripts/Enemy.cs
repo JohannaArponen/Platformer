@@ -166,25 +166,24 @@ public abstract class Enemy : MonoBehaviour {
     if (invulnerabilityStart < Time.time - invulnerabilityDuration) {
       if (invulnerable) {
         invulnerable = false;
-        OnInvulnerableEnd();
+        _OnInvulnerableEnd();
       }
       var results = new List<Collider2D>();
       if (col.OverlapCollider(new ContactFilter2D(), results) > 0) {
         foreach (var result in results) {
           if (result.gameObject.tag == "Player") {
             print("HIT PLAYER");
-            result.GetComponent<Lifes>().DamagePlayer(collisionDamage, gameObject);
+            var lifes = result.GetComponent<Lifes>();
+            if (lifes != null) lifes.DamagePlayer(collisionDamage, gameObject);
             return;
           }
           var weapon = result.gameObject.GetComponent<Weapon>();
-          if (weapon != null) {
-            OnHit(weapon.damage, result, weapon);
-          }
+          if (weapon != null) _OnHit(weapon.damage, result, weapon);
         }
       } else invulnerable = false;
     } else {
       if (destroyTime <= Time.time) {
-        OnDestroy();
+        _OnDestroy();
       }
     }
     EnemyUpdate();

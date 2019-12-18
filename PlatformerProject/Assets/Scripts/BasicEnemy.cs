@@ -22,12 +22,14 @@ public class BasicEnemy : Enemy {
 
   public Animator anim;
   private Physics2DCharacter physics;
+  private Lifes playerLifes;
   private Physics2DCharEnemyAI ai;
 
 
   protected override void OnCreate() {
     physics = GetComponent<Physics2DCharacter>();
     ai = GetComponent<Physics2DCharEnemyAI>();
+    playerLifes = GameObject.FindGameObjectWithTag("Player").GetComponent<Lifes>();
   }
 
   protected override void EnemyUpdate() {

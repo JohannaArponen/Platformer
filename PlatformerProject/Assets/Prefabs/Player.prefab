@@ -208,7 +208,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  duration: 0.75
+  duration: 0.25
   cooldown: 0
   disableObjects: []
   enableObjects:
@@ -463,7 +463,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useSwingDuration: 1
   channelTime: 1
-  duration: 666
+  duration: 0.666
   startSpeed: 25
   endSpeed: 15
   speedCurve:

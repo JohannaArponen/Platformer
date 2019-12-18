@@ -26,6 +26,20 @@ public class AntiAidsSpider : MonoBehaviour {
 
   void Update() {
     var prevPos = transform.position;
+
+    var results = new List<Collider2D>();
+    col.OverlapCollider(new ContactFilter2D(), results);
+    foreach (var col in results) {
+      if (col.tag != "Player") continue;
+      var rocketBoost = col.GetComponent<RocketBoost>();
+      if (rocketBoost == null) continue;
+
+      if (rocketBoost.enabled) {
+        man.DeletSpiders();
+        break;
+      }
+    }
+
     if (landed) {
       transform.position = transform.position.AddXY(dir * speed * Time.deltaTime);
       Physics2D.SyncTransforms();

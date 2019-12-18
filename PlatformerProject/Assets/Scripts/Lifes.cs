@@ -10,7 +10,6 @@ public class Lifes : MonoBehaviour {
   public Text centerText;
 
   public float startHealth = 100;
-  [HideInInspector]
   public float health;
   public GameObject healthElement;
   public Canvas canvas;
@@ -34,9 +33,9 @@ public class Lifes : MonoBehaviour {
     health = startHealth;
   }
   public void DamagePlayer(float amount, GameObject source) {
-    if (invulnerableStart < Time.time - invulnerableDuration) return;
+    if (invulnerableStart > Time.time - invulnerableDuration) return;
 
-    if (phys == null) {
+    if (phys != null) {
       phys.velocity += (float2)((source.transform.position - transform.position).xy() * onHitPushForce);
     }
 
