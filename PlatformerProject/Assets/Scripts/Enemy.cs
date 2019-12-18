@@ -37,7 +37,7 @@ public abstract class Enemy : MonoBehaviour {
   protected SpriteRenderer sr;
   protected Rect rect;
   protected Collider2D col;
-  protected Camera cam;
+  protected Camera cam;  
 
 
 
@@ -100,8 +100,9 @@ public abstract class Enemy : MonoBehaviour {
   public virtual void Damage(float damage, Collider2D col = null, Weapon weapon = null) => health -= damage;
   public virtual void Kill(float damage = 1, Collider2D col = null, Weapon weapon = null) { if (!dead) Damage(health); }
 
-  #endregion
 
+  #endregion
+    
 
   #region events
 
@@ -135,6 +136,8 @@ public abstract class Enemy : MonoBehaviour {
   protected virtual void _OnKill(float damage, Collider2D col, Weapon weapon) {
     OnKill(damage, col, weapon);
     Destroy(gameObject, destroyDelay);
+        //var gm = GameObject.Find("GameManager");
+        //gm.GetComponent<GameManager>().EnemyDestroy();
   }
 
   // When enemy is dead

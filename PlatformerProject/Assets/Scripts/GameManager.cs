@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour{
     public GameObject persistenDataPrefab;
     PersistenData pData;
 
+
     void UpdateScoreText() {
         int visibleHighscore = score > pData.highScore ? score : pData.highScore;
         scoreText.text = "Score: " + score + " High: " + visibleHighscore;
@@ -18,7 +19,7 @@ public class GameManager : MonoBehaviour{
     
     void Start(){
         pData = FindObjectOfType<PersistenData>();
-        if(pData == null) {
+        if (pData == null) {
             pData = Instantiate(persistenDataPrefab).GetComponent<PersistenData>();
         }
         UpdateScoreText();
@@ -38,7 +39,7 @@ public class GameManager : MonoBehaviour{
     public void EnemyDestroy() {
         score++;
         UpdateScoreText();
-        if(score > pData.highScore) {
+        if (score > pData.highScore) {
             print("New HighScore");
             pData.highScore = score;
         }
