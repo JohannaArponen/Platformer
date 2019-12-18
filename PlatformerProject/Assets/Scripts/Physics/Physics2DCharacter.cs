@@ -15,8 +15,11 @@ public class Physics2DCharacter : MonoBehaviour {
   public float animationSpeedMultiplier = 1;
   [ConditionalField(nameof(animator))]
   [Tooltip("Jump float value when flying up")]
+  public bool doJumpAnim = false;
+  [ConditionalField(nameof(doJumpAnim))]
+  [Tooltip("Jump float value when flying up")]
   public float jumpUpVal = 1f;
-  [ConditionalField(nameof(animator))]
+  [ConditionalField(nameof(doJumpAnim))]
   [Tooltip("Jump float value when falling down")]
   public float jumpDownVal = 0.5f;
 
@@ -220,8 +223,8 @@ public class Physics2DCharacter : MonoBehaviour {
     if (animator != null) {
       if (onGround && !onSlope) {
         animator.SetFloat("Speed", math.abs(endVel.x * animationSpeedMultiplier / Time.smoothDeltaTime));
-        animator.SetFloat("Jump", -1);
-      } else animator.SetFloat("Jump", endVel.y > 0 ? jumpUpVal : jumpDownVal);
+        if (doJumpAnim) animator.SetFloat("Jump", -1);
+      } else if (doJumpAnim) animator.SetFloat("Jump", endVel.y > 0 ? jumpUpVal : jumpDownVal);
     }
 
 

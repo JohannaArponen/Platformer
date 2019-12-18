@@ -38,7 +38,7 @@ public class Spawner : MonoBehaviour {
   // Update is called once per frame
   void Update() {
     if (totalSpawned < maxSpawns) {
-      while (spawning && prevSpawnTime <= Time.time - spawnDelay)
+      while (spawningCount > totalSpawned && spawning && prevSpawnTime <= Time.time - spawnDelay)
         Spawn();
     }
   }
@@ -52,10 +52,9 @@ public class Spawner : MonoBehaviour {
   }
 
   [ButtonMethod]
-  public void StartSpawning() => StartSpawning(spawnCount);
-  public void StartSpawning(int count) {
+  public void StartSpawning() {
     spawning = true;
-    spawningCount += count;
+    spawningCount += spawnCount;
   }
 
   void Spawn() {
