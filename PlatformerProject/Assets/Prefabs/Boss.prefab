@@ -2117,8 +2117,8 @@ MonoBehaviour:
   damage: 5
   room:
     serializedVersion: 2
-    x: 25.125
-    y: 15.450001
+    x: -9.375
+    y: -6.25
     width: 18.75
     height: 12.5
   player: {fileID: 0}
